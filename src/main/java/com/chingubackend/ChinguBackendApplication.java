@@ -1,4 +1,4 @@
-package com.chingu.chingubackend;
+package com.chingubackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
