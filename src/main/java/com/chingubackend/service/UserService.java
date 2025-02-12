@@ -35,6 +35,8 @@ public class UserService {
                 .nickname(request.getNickname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .profilePictureUrl(request.getProfilePictureUrl())
+                .bio(request.getBio())
                 .socialType(SocialType.NONE)
                 .build();
 
