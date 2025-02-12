@@ -21,6 +21,14 @@ public class UserService {
             throw new IllegalStateException("이미 가입된 이메일입니다.");
         }
 
+        if (userRepository.findByUserId(request.getUserId()).isPresent()) {
+            throw new IllegalStateException("이미 사용 중인 아이디입니다.");
+        }
+
+        if (userRepository.findByNickname(request.getNickname()).isPresent()) {
+            throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
+        }
+
         User user = User.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
