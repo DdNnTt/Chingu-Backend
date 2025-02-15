@@ -5,7 +5,7 @@ import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 
 @Data
-public class SignupRequest {
+public class UserRequest {
     @NotBlank(message = "아이디는 필수 입력 항목입니다.")
     private String userId;
 
