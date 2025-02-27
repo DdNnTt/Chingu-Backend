@@ -43,4 +43,12 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void deleteUser(String userId) {
+        if (!userRepository.findByUserId(userId).isPresent()) {
+            throw new IllegalStateException("존재하지 않는 사용자입니다.");
+        }
+        userRepository.deleteByUserId(userId);
+    }
+
 }
