@@ -41,9 +41,8 @@ public class ScheduleService {
 
     public Schedule updateSchedule(Long scheduleId, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("Schedule not found with id: " + scheduleId));
+                .orElseThrow(() -> new IllegalArgumentException("해당 스케줄 ID가 존재하지 않습니다. 확인 부탁드리겠습니다 : " + scheduleId));
 
-        // **필드별 null 체크 후 업데이트**
         if (request.getTitle() != null) {
             schedule.setTitle(request.getTitle());
         }
@@ -55,5 +54,11 @@ public class ScheduleService {
         }
 
         return scheduleRepository.save(schedule);
+    }
+
+    public void deleteSchedule(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스케줄 ID가 존재하지 않습니다. 확인 부탁드리겠습니다 : " + scheduleId));
+        scheduleRepository.delete(schedule);
     }
 }
