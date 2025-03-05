@@ -26,4 +26,13 @@ public class ScheduleController {
         List<Schedule> schedules = scheduleService.getSchedulesByUserId(userId);
         return ResponseEntity.ok(schedules);
     }
+
+    @PutMapping("/{scheduleId}")
+    public ResponseEntity<Schedule> updateSchedule(
+            @PathVariable Long scheduleId,
+            @RequestBody ScheduleRequest request) {
+
+        Schedule updatedSchedule = scheduleService.updateSchedule(scheduleId, request);
+        return ResponseEntity.ok(updatedSchedule);
+    }
 }
