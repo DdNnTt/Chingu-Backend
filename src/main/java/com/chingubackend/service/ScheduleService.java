@@ -9,6 +9,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,5 +31,11 @@ public class ScheduleService {
                 .build();
 
         return scheduleRepository.save(schedule);
+    }
+
+    public List<Schedule> getSchedulesByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다. 확인 부탁드리겠습니다. : " + userId));
+        return scheduleRepository.findByUser(user);
     }
 }
