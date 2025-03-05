@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Data
 public class ScheduleRequest {
-    private String userId;
+    private Long userId;
     private String title;
     private String description;
     private LocalDate scheduleDate;
