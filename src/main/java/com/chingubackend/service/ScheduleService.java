@@ -38,4 +38,22 @@ public class ScheduleService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다. 확인 부탁드리겠습니다. : " + userId));
         return scheduleRepository.findByUser(user);
     }
+
+    public Schedule updateSchedule(Long scheduleId, ScheduleRequest request) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("Schedule not found with id: " + scheduleId));
+
+        // **필드별 null 체크 후 업데이트**
+        if (request.getTitle() != null) {
+            schedule.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            schedule.setDescription(request.getDescription());
+        }
+        if (request.getScheduleDate() != null) {
+            schedule.setScheduleDate(request.getScheduleDate());
+        }
+
+        return scheduleRepository.save(schedule);
+    }
 }
