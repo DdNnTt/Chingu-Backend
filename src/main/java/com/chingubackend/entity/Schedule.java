@@ -6,19 +6,19 @@ import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-//@Table(name = "user_schedule")
+@Table(name = "user_schedule")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserSchedule {
+public class Schedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
+    private String userId;
     private String title;
     private String description;
     private LocalDate scheduleDate;
