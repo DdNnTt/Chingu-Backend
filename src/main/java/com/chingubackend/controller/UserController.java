@@ -36,7 +36,9 @@ public class UserController {
     }
 
     @GetMapping("/check-nickname")
-    public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
+    @Operation(summary = "닉네임 중복 확인", description = "닉네임이 사용 가능한지 확인합니다.")
+    public ResponseEntity<Boolean> checkNickname(
+            @Parameter(description = "확인할 닉네임", example = "nickname123") @RequestParam String nickname) {
         boolean isAvailable = userService.isNicknameAvailable(nickname);
         return ResponseEntity.ok(isAvailable);
     }
