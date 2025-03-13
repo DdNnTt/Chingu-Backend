@@ -3,6 +3,7 @@ package com.chingubackend.controller;
 import com.chingubackend.dto.request.SignupRequest;
 import com.chingubackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,9 @@ public class UserController {
     }
 
     @GetMapping("/check-userId")
-    public ResponseEntity<Boolean> checkUserId(@RequestParam String userId) {
+    @Operation(summary = "아이디 중복 확인", description = "아이디가 사용 가능한지 확인합니다.")
+    public ResponseEntity<Boolean> checkUserId(
+            @Parameter(description = "확인할 아이디", example = "user123") @RequestParam String userId) {
         boolean isAvailable = userService.isUserIdAvailable(userId);
         return ResponseEntity.ok(isAvailable);
     }
