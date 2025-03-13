@@ -36,4 +36,9 @@ public class UserService {
         return userRepository.findByUserId(userId).isEmpty();
     }
 
+    @Transactional
+    public boolean isNicknameAvailable(String nickname) {
+        return userRepository.findByNickname(nickname).isEmpty();
+    }
+
 }

@@ -31,4 +31,10 @@ public class UserController {
         boolean isAvailable = userService.isUserIdAvailable(userId);
         return ResponseEntity.ok(isAvailable);
     }
+
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
+        boolean isAvailable = userService.isNicknameAvailable(nickname);
+        return ResponseEntity.ok(isAvailable);
+    }
 }
