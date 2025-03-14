@@ -1,6 +1,6 @@
 package com.chingubackend.service;
 
-import com.chingubackend.dto.request.SignupRequest;
+import com.chingubackend.dto.request.UserRequest;
 import com.chingubackend.entity.User;
 import com.chingubackend.model.SocialType;
 import com.chingubackend.repository.UserRepository;
@@ -16,7 +16,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public void registerUser(SignupRequest request) {
+    public void registerUser(UserRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalStateException("이미 가입된 이메일입니다.");
         }
@@ -41,6 +41,14 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(String userId) {
+        if (!userRepository.findByUserId(userId).isPresent()) {
+            throw new IllegalStateException("존재하지 않는 사용자입니다.");
+        }
+        userRepository.deleteByUserId(userId);
     }
 
 }
