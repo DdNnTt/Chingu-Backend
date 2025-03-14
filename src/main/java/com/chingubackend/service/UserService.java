@@ -1,6 +1,6 @@
 package com.chingubackend.service;
 
-import com.chingubackend.dto.request.SignupRequest;
+import com.chingubackend.dto.request.UserRequest;
 import com.chingubackend.entity.User;
 import com.chingubackend.model.SocialType;
 import com.chingubackend.repository.UserRepository;
@@ -39,6 +39,12 @@ public class UserService {
     @Transactional
     public boolean isNicknameAvailable(String nickname) {
         return userRepository.findByNickname(nickname).isEmpty();
+
+    public void deleteUser(String userId) {
+        if (!userRepository.findByUserId(userId).isPresent()) {
+            throw new IllegalStateException("존재하지 않는 사용자입니다.");
+        }
+        userRepository.deleteByUserId(userId);
     }
 
 }
