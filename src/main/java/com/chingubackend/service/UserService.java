@@ -16,7 +16,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public void registerUser(SignupRequest request) {
+    public void registerUser(UserRequest request) {
         User user = User.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
@@ -39,6 +39,7 @@ public class UserService {
     @Transactional
     public boolean isNicknameAvailable(String nickname) {
         return userRepository.findByNickname(nickname).isEmpty();
+    }
 
     public void deleteUser(String userId) {
         if (!userRepository.findByUserId(userId).isPresent()) {
