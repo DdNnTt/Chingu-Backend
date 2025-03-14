@@ -16,19 +16,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public void registerUser(UserRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
-        }
-
-        if (userRepository.findByUserId(request.getUserId()).isPresent()) {
-            throw new IllegalStateException("이미 사용 중인 아이디입니다.");
-        }
-
-        if (userRepository.findByNickname(request.getNickname()).isPresent()) {
-            throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
-        }
-
+    public void registerUser(SignupRequest request) {
         User user = User.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
@@ -44,6 +32,14 @@ public class UserService {
     }
 
     @Transactional
+    public boolean isUserIdAvailable(String userId) {
+        return userRepository.findByUserId(userId).isEmpty();
+    }
+
+    @Transactional
+    public boolean isNicknameAvailable(String nickname) {
+        return userRepository.findByNickname(nickname).isEmpty();
+
     public void deleteUser(String userId) {
         if (!userRepository.findByUserId(userId).isPresent()) {
             throw new IllegalStateException("존재하지 않는 사용자입니다.");
