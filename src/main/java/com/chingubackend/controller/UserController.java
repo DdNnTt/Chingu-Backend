@@ -9,9 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,8 +46,9 @@ public class UserController {
             @Parameter(description = "확인할 닉네임", example = "nickname123") @RequestParam String nickname) {
         boolean isAvailable = userService.isNicknameAvailable(nickname);
         return ResponseEntity.ok(isAvailable);
-      
-  
+
+    }
+
     @DeleteMapping("/delete/{userId}")
     @Operation(summary = "회원 탈퇴", description = "회원 ID를 받아 탈퇴 처리합니다.")
     public ResponseEntity<String> deleteUser(@PathVariable String userId) {
