@@ -46,7 +46,15 @@ public class UserController {
             @Parameter(description = "확인할 닉네임", example = "nickname123") @RequestParam String nickname) {
         boolean isAvailable = userService.isNicknameAvailable(nickname);
         return ResponseEntity.ok(isAvailable);
+    }
 
+    @GetMapping("/find-userId")
+    @Operation(summary = "회원 아이디 찾기", description = "이름과 이메일을 입력하여 회원 아이디를 찾습니다.")
+    public ResponseEntity<String> findUserId(
+            @Parameter(description = "사용자 이름", example = "홍길동") @RequestParam String name,
+            @Parameter(description = "사용자 이메일", example = "user@example.com") @RequestParam String email){
+        String userId = userService.findUserIdByNameAndEmail(name, email);
+        return ResponseEntity.ok(userId);
     }
 
     @DeleteMapping("/delete/{userId}")
