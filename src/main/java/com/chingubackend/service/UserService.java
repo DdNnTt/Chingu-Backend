@@ -41,6 +41,13 @@ public class UserService {
         return userRepository.findByNickname(nickname).isEmpty();
     }
 
+    @Transactional
+    public String findUserIdByNameAndEmail(String name, String email) {
+        return userRepository.findByNameAndEmail(name, email)
+                .map(User::getUserId)
+                .orElseThrow(() -> new IllegalArgumentException("해당하는 사용자를 찾을 수 없습니다."));
+    }
+
     public void deleteUser(String userId) {
         if (!userRepository.findByUserId(userId).isPresent()) {
             throw new IllegalStateException("존재하지 않는 사용자입니다.");
