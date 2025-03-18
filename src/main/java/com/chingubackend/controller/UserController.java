@@ -1,6 +1,7 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.UserRequest;
+import com.chingubackend.entity.User;
 import com.chingubackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,6 +56,13 @@ public class UserController {
             @Parameter(description = "사용자 이메일", example = "user@example.com") @RequestParam String email){
         String userId = userService.findUserIdByNameAndEmail(name, email);
         return ResponseEntity.ok(userId);
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(summary = "유저 정보 조회", description = "유저 정보를 가져옵니다.")
+    public ResponseEntity<User> getUserInfo(@Parameter(description = "유저 ID") @PathVariable String userId) {
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/delete/{userId}")
