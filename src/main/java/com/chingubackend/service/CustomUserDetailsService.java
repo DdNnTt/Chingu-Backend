@@ -1,3 +1,5 @@
+package com.chingubackend.service;
+
 import com.chingubackend.entity.User;
 import com.chingubackend.repository.UserRepository;
 import java.util.ArrayList;
