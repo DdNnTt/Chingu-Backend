@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,5 +72,15 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable String userId) {
         userService.deleteUser(userId);
         return ResponseEntity.ok("회원 탈퇴 성공");
+    }
+
+    @GetMapping("/mypage")
+    @Operation(summary = "마이페이지 조회", description = "로그인한 사용자의 마이페이지 정보를 조회합니다.")
+    public ResponseEntity<User> getMyPage() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User user = userService.getUserById(username);
+        return ResponseEntity.ok(user);
     }
 }
