@@ -4,10 +4,10 @@ import com.chingubackend.dto.request.FriendRequest;
 import com.chingubackend.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/friends")
@@ -20,4 +20,12 @@ public class FriendController {
         String resultMessage = friendService.sendFriendRequest(dto);
         return ResponseEntity.ok(resultMessage);
     }
+
+    @GetMapping("/requests")
+    public ResponseEntity<List<FriendRequest.PendingRequestDto>> getReceivedRequests(@RequestParam Long userId) {
+        return ResponseEntity.ok(friendService.getReceivedFriendRequests(userId));
+    }
+
+
+
 }

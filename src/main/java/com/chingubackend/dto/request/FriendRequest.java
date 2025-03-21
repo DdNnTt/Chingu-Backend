@@ -12,4 +12,14 @@ import lombok.Setter;
 public class FriendRequest {
     private Long userId;
     private Long friendId;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PendingRequestDto {
+        private Long fromUserId;
+        private String nickname;
+        private java.sql.Timestamp requestedAt;
+    }
 }

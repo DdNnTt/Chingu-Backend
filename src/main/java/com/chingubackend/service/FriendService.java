@@ -4,17 +4,21 @@ import com.chingubackend.dto.request.FriendRequest;
 import com.chingubackend.entity.Friend;
 import com.chingubackend.model.RequestStatus;
 import com.chingubackend.repository.FriendRepository;
+import com.chingubackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FriendService {
     private final FriendRepository friendRepository;
+    private final UserRepository userRepository;
 
     public String sendFriendRequest(FriendRequest dto){
         Long userId = dto.getUserId();
@@ -51,6 +55,20 @@ public class FriendService {
         friendRequest.setFriendSince(Timestamp.from(Instant.now()));
         friendRepository.save(friendRequest);
         return "친구 요청이 전송되었습니다.";
+    }
+
+
+    public List<FriendRequest.PendingRequestDto> getReceivedFriendRequests(Long userId) {
+        List<Friend> requests = friendRepository.findPendingRequestsForUser(userId);
+
+        return requests.stream()
+                .map(friend -> {
+                    String nickname = userRepository.findById(friend.getUserId())
+                            .map(user -> user.getNickname())
+                            .orElse("Unknown");
+                    return new FriendRequest.PendingRequestDto(friend.getUserId(), nickname, friend.getFriendSince());
+                })
+                .collect(Collectors.toList());
     }
 
 }
