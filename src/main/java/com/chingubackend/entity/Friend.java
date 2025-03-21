@@ -1,5 +1,6 @@
 package com.chingubackend.entity;
 
+import com.chingubackend.model.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
