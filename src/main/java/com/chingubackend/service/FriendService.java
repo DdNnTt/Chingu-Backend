@@ -43,6 +43,15 @@ public class FriendService {
             return "상대방이 먼저 보낸 요청이 있어 자동으로 친구가 되었습니다.";
         }
 
+        Optional<Friend> rejected = friendRepository.findByUserIdAndFriendIdAndRequestStatus(userId, friendId, RequestStatus.REJECTED);
+        if (rejected.isPresent()){
+            Friend request = rejected.get();
+            request.setRequestStatus(RequestStatus.PENDING);
+            request.setFriendSince(Timestamp.from(Instant.now()));
+            friendRepository.save(request);
+            return "거절 요청이 다시 친구 요청으로 활성화 되었습니다.";
+        }
+
         boolean alreadyRequested = friendRepository.existsByUserIdAndFriendIdAndRequestStatus(userId, friendId, RequestStatus.PENDING);
         if (alreadyRequested){
             return "이미 친구 요청을 보냈습니다.";
