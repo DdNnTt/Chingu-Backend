@@ -1,4 +1,4 @@
-package com.chingubackend.security;
+package com.chingubackend.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

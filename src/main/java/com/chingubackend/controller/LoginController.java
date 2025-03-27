@@ -2,7 +2,7 @@ package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.LoginRequest;
 import com.chingubackend.dto.response.LoginResponse;
-import com.chingubackend.security.JwtUtil;
+import com.chingubackend.jwt.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

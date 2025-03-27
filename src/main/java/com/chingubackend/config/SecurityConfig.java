@@ -1,7 +1,7 @@
 package com.chingubackend.config;
 
-import com.chingubackend.security.JwtAuthenticationFilter;
-import com.chingubackend.service.CustomUserDetailsService;
+import com.chingubackend.jwt.JwtAuthenticationFilter;
+import com.chingubackend.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

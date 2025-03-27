@@ -1,4 +1,4 @@
-package com.chingubackend.service;
+package com.chingubackend.security;
 
 import com.chingubackend.entity.User;
 import com.chingubackend.repository.UserRepository;
