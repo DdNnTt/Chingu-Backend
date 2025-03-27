@@ -22,4 +22,14 @@ public class FriendRequest {
         private String nickname;
         private java.sql.Timestamp requestedAt;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ResponseRequestDto {
+        private Long userId;
+        private Long friendId;
+        private String status;
+    }
 }

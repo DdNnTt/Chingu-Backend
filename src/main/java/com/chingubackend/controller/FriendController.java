@@ -26,6 +26,11 @@ public class FriendController {
         return ResponseEntity.ok(friendService.getReceivedFriendRequests(userId));
     }
 
+    @PutMapping("/respond")
+    public ResponseEntity<String> respondToFriendRequest(@RequestBody FriendRequest.ResponseRequestDto dto) {
+        String result = friendService.respondToFriendRequest(dto);
+        return ResponseEntity.ok(result);
+    }
 
 
 }

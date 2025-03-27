@@ -35,7 +35,7 @@ public class FriendService {
         }
 
         Optional<Friend> reversePendingRequest = friendRepository.findByUserIdAndFriendIdAndRequestStatus(friendId, userId, RequestStatus.PENDING);
-        if(reversePendingRequest.isPresent()){
+        if (reversePendingRequest.isPresent()){
             Friend reverseRequest = reversePendingRequest.get();
             reverseRequest.setRequestStatus(RequestStatus.ACCEPTED);
             reverseRequest.setFriendSince(Timestamp.from(Instant.now()));
@@ -69,6 +69,29 @@ public class FriendService {
                     return new FriendRequest.PendingRequestDto(friend.getUserId(), nickname, friend.getFriendSince());
                 })
                 .collect(Collectors.toList());
+    }
+
+    public String respondToFriendRequest(FriendRequest.ResponseRequestDto dto){
+        Optional<Friend> optionalRequest = friendRepository.findByUserIdAndFriendIdAndRequestStatus(dto.getFriendId(), dto.getUserId(), RequestStatus.PENDING);
+
+        if(optionalRequest.isEmpty()){
+            return "친구 요청이 존재하지 않습니다.";
+        }
+
+        Friend friendRequest = optionalRequest.get();
+
+        if("ACCEPTED".equalsIgnoreCase(dto.getStatus())){
+            friendRequest.setRequestStatus(RequestStatus.ACCEPTED);
+            friendRequest.setFriendSince(Timestamp.from(Instant.now()));
+            friendRepository.save(friendRequest);
+            return "친구 요청을 수락했습니다.";
+        } else if ("REJECTED".equalsIgnoreCase(dto.getStatus())){
+            friendRequest.setRequestStatus(RequestStatus.REJECTED);
+            friendRepository.save(friendRequest);
+            return "친구 요청을 거절했습니다.";
+        } else {
+            return "올바르지 않은 응답 상태입니다.";
+        }
     }
 
 }
