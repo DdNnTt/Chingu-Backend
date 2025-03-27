@@ -47,13 +47,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF 비활성화
+                .headers(headers -> headers.frameOptions().disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll() // 인증 없이 접근 허용
+                        .requestMatchers("/auth/login", "/auth/signup","/api/users/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll() // 인증 없이 접근 허용
                         .anyRequest().authenticated() // 그 외의 요청은 인증 필요
                 )
                 .authenticationProvider(authenticationProvider()) // 사용자 인증 제공자 설정
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
+                .httpBasic();
 
         return http.build();
     }
