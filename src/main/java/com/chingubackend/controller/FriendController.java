@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/friends")
@@ -35,6 +36,15 @@ public class FriendController {
     public ResponseEntity<List<FriendRequest.FriendList>> getAcceptedFriends(@RequestParam Long userId) {
         List<FriendRequest.FriendList> friends = friendService.getAcceptedFriends(userId);
         return ResponseEntity.ok(friends);
+    }
+
+    @DeleteMapping("/{friendUserId}")
+    public ResponseEntity<Map<String, Object>> deleteFriend(
+            @PathVariable Long friendUserId,
+            @RequestParam Long userId // 인증 붙으면 @AuthenticationPrincipal 로 대체
+    ) {
+        Map<String, Object> result = friendService.deleteFriend(userId, friendUserId);
+        return ResponseEntity.ok(result);
     }
 
 
