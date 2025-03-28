@@ -1,12 +1,15 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.UserRequest;
+import com.chingubackend.entity.User;
 import com.chingubackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,7 +49,22 @@ public class UserController {
             @Parameter(description = "확인할 닉네임", example = "nickname123") @RequestParam String nickname) {
         boolean isAvailable = userService.isNicknameAvailable(nickname);
         return ResponseEntity.ok(isAvailable);
+    }
 
+    @GetMapping("/find-userId")
+    @Operation(summary = "회원 아이디 찾기", description = "이름과 이메일을 입력하여 회원 아이디를 찾습니다.")
+    public ResponseEntity<String> findUserId(
+            @Parameter(description = "사용자 이름", example = "홍길동") @RequestParam String name,
+            @Parameter(description = "사용자 이메일", example = "user@example.com") @RequestParam String email){
+        String userId = userService.findUserIdByNameAndEmail(name, email);
+        return ResponseEntity.ok(userId);
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(summary = "유저 정보 조회", description = "유저 정보를 가져옵니다.")
+    public ResponseEntity<User> getUserInfo(@Parameter(description = "유저 ID") @PathVariable String userId) {
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/delete/{userId}")
@@ -54,5 +72,15 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable String userId) {
         userService.deleteUser(userId);
         return ResponseEntity.ok("회원 탈퇴 성공");
+    }
+
+    @GetMapping("/mypage")
+    @Operation(summary = "마이페이지 조회", description = "로그인한 사용자의 마이페이지 정보를 조회합니다.")
+    public ResponseEntity<User> getMyPage() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User user = userService.getUserById(username);
+        return ResponseEntity.ok(user);
     }
 }
