@@ -4,7 +4,6 @@ import com.chingubackend.dto.request.FriendRequest;
 import com.chingubackend.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,12 +21,12 @@ public class FriendController {
     }
 
     @GetMapping("/requests")
-    public ResponseEntity<List<FriendRequest.PendingRequestDto>> getReceivedRequests(@RequestParam Long userId) {
+    public ResponseEntity<List<FriendRequest.PendingRequest>> getReceivedRequests(@RequestParam Long userId) {
         return ResponseEntity.ok(friendService.getReceivedFriendRequests(userId));
     }
 
     @PutMapping("/respond")
-    public ResponseEntity<String> respondToFriendRequest(@RequestBody FriendRequest.ResponseRequestDto dto) {
+    public ResponseEntity<String> respondToFriendRequest(@RequestBody FriendRequest.ResponseRequest dto) {
         String result = friendService.respondToFriendRequest(dto);
         return ResponseEntity.ok(result);
     }

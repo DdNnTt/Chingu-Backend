@@ -67,7 +67,7 @@ public class FriendService {
     }
 
 
-    public List<FriendRequest.PendingRequestDto> getReceivedFriendRequests(Long userId) {
+    public List<FriendRequest.PendingRequest> getReceivedFriendRequests(Long userId) {
         List<Friend> requests = friendRepository.findPendingRequestsForUser(userId);
 
         return requests.stream()
@@ -75,12 +75,12 @@ public class FriendService {
                     String nickname = userRepository.findById(friend.getUserId())
                             .map(user -> user.getNickname())
                             .orElse("Unknown");
-                    return new FriendRequest.PendingRequestDto(friend.getUserId(), nickname, friend.getFriendSince());
+                    return new FriendRequest.PendingRequest(friend.getUserId(), nickname, friend.getFriendSince());
                 })
                 .collect(Collectors.toList());
     }
 
-    public String respondToFriendRequest(FriendRequest.ResponseRequestDto dto){
+    public String respondToFriendRequest(FriendRequest.ResponseRequest dto){
         Optional<Friend> optionalRequest = friendRepository.findByUserIdAndFriendIdAndRequestStatus(dto.getFriendId(), dto.getUserId(), RequestStatus.PENDING);
 
         if(optionalRequest.isEmpty()){

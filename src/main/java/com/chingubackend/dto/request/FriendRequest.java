@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,7 +19,7 @@ public class FriendRequest {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class PendingRequestDto {
+    public static class PendingRequest {
         private Long fromUserId;
         private String nickname;
         private java.sql.Timestamp requestedAt;
@@ -27,7 +29,7 @@ public class FriendRequest {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ResponseRequestDto {
+    public static class ResponseRequest {
         private Long userId;
         private Long friendId;
         private String status;
