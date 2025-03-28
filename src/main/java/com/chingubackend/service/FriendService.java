@@ -2,14 +2,18 @@ package com.chingubackend.service;
 
 import com.chingubackend.dto.request.FriendRequest;
 import com.chingubackend.entity.Friend;
+import com.chingubackend.entity.FriendshipScore;
+import com.chingubackend.entity.User;
 import com.chingubackend.model.RequestStatus;
 import com.chingubackend.repository.FriendRepository;
+import com.chingubackend.repository.FriendshipScoreRepository;
 import com.chingubackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FriendService {
     private final FriendRepository friendRepository;
+    private final FriendshipScoreRepository friendshipScoreRepository;
     private final UserRepository userRepository;
 
     public String sendFriendRequest(FriendRequest dto){
@@ -102,5 +107,40 @@ public class FriendService {
             return "올바르지 않은 응답 상태입니다.";
         }
     }
+
+    public List<FriendRequest.FriendList> getAcceptedFriends(Long userId) {
+        List<Friend> accepted = friendRepository.findAllAcceptedFriends(userId);
+        List<FriendRequest.FriendList> friends = new ArrayList<>();
+
+        for (Friend friend : accepted) {
+            Long otherId = friend.getUserId().equals(userId)
+                    ? friend.getFriendId()
+                    : friend.getUserId();
+
+            Optional<User> optionalUser = userRepository.findById(otherId);
+            if (optionalUser.isEmpty()) continue;
+
+            User user = optionalUser.get();
+
+            Long left = Math.min(userId, otherId);
+            Long right = Math.max(userId, otherId);
+
+            int score = friendshipScoreRepository
+                    .findByUserIdAndFriendUserId(left, right)
+                    .map(FriendshipScore::getScore)
+                    .orElse(0);
+
+            friends.add(new FriendRequest.FriendList(
+                    otherId,
+                    user.getNickname(),
+                    user.getName(),
+                    score,
+                    friend.getFriendSince()
+            ));
+        }
+
+        return friends;
+    }
+
 
 }

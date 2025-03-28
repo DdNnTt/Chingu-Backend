@@ -34,4 +34,17 @@ public class FriendRequest {
         private Long friendId;
         private String status;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FriendList {
+        private Long friendUserId;
+        private String nickname;
+        private String name;
+        private int score;
+        private Timestamp friendSince;
+    }
+
 }

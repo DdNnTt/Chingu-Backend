@@ -31,5 +31,11 @@ public class FriendController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping
+    public ResponseEntity<List<FriendRequest.FriendList>> getAcceptedFriends(@RequestParam Long userId) {
+        List<FriendRequest.FriendList> friends = friendService.getAcceptedFriends(userId);
+        return ResponseEntity.ok(friends);
+    }
+
 
 }
