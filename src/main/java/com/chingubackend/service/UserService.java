@@ -1,10 +1,13 @@
 package com.chingubackend.service;
 
 import com.chingubackend.dto.request.UserRequest;
+import com.chingubackend.dto.response.UserResponse;
 import com.chingubackend.entity.User;
 import com.chingubackend.model.SocialType;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -59,6 +62,11 @@ public class UserService {
             throw new IllegalStateException("존재하지 않는 사용자입니다.");
         }
         userRepository.deleteByUserId(userId);
+    }
+
+    public List<UserResponse> searchUsers(String keyword) {
+        List<User> users = userRepository.findByNameOrNicknameOrUserId(keyword, keyword, keyword);
+        return users.stream().map(UserResponse::fromEntity).collect(Collectors.toList());
     }
 
 }
