@@ -1,11 +1,15 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.UserRequest;
+import com.chingubackend.dto.response.UserResponse;
 import com.chingubackend.entity.User;
 import com.chingubackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,7 +37,6 @@ public class UserController {
         userService.registerUser(request);
         return ResponseEntity.ok("회원가입 성공");
     }
-
 
     @GetMapping("/check-userId")
     @Operation(summary = "아이디 중복 확인", description = "아이디가 사용 가능한지 확인합니다.")
@@ -82,5 +85,22 @@ public class UserController {
 
         User user = userService.getUserById(username);
         return ResponseEntity.ok(user);
+    }
+
+    @Operation(summary = "회원 검색", description = "이름, 닉네임, 회원 아이디로 회원을 검색합니다.")
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> searchUsers(
+            @Parameter(description = "검색어 (이름, 닉네임, 회원 아이디 포함)")
+            @RequestParam String keyword) {
+        List<UserResponse> users = userService.searchUsers(keyword);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", users);
+
+        if (users.isEmpty()) {
+            response.put("message", "일치하는 회원이 없습니다.");
+        }
+
+        return ResponseEntity.ok(response);
     }
 }
