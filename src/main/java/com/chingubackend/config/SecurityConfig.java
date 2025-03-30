@@ -50,8 +50,8 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions().disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/signup","/api/users/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll() // 인증 없이 접근 허용
-                        .anyRequest().authenticated() // 그 외의 요청은 인증 필요
+                        .requestMatchers("/auth/login", "/auth/signup","/api/users/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**","/api/auth/email/verify", "/api/auth/email/confirm","/api/users/delete/**").permitAll() // 인증 없이 접근 허용
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider()) // 사용자 인증 제공자 설정
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
