@@ -9,6 +9,8 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +19,17 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
     public void registerUser(UserRequest request) {
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        String verified = ops.get("email:verified:" + request.getEmail());
+
+        if (verified == null || !verified.equals("true")) {
+            throw new IllegalStateException("이메일 인증이 필요합니다.");
+        }
+
         User user = User.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
@@ -57,6 +67,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
     }
 
+    @Transactional
     public void deleteUser(String userId) {
         if (!userRepository.findByUserId(userId).isPresent()) {
             throw new IllegalStateException("존재하지 않는 사용자입니다.");
