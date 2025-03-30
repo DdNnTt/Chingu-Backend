@@ -46,4 +46,47 @@ public class AuthController {
 
         return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
     }
+
+    @Operation(summary = "비밀번호 찾기 인증 코드 전송", description = "비밀번호 찾기를 위해 이메일로 인증 코드를 전송합니다.")
+    @PostMapping("/password/verify")
+    public ResponseEntity<String> sendPasswordResetVerificationCode(
+            @Parameter(description = "비밀번호를 찾을 이메일") @RequestParam String email) {
+        String code = emailService.generateVerificationCode();
+        emailService.saveVerificationCode(email, code);
+        mailService.sendEmail(email, "비밀번호 찾기 인증 코드", "인증 코드: " + code);
+
+        return ResponseEntity.ok("인증 코드가 이메일로 전송되었습니다.");
+    }
+
+    @Operation(summary = "비밀번호 변경", description = "인증 코드 확인 후 새로운 비밀번호를 설정합니다.")
+    @PostMapping("/password/reset")
+    public ResponseEntity<String> resetPassword(
+            @Parameter(description = "비밀번호를 찾을 이메일") @RequestParam String email,
+            @Parameter(description = "새 비밀번호") @RequestParam String newPassword,
+            @Parameter(description = "입력한 인증 코드") @RequestParam String code) {
+
+        // 인증 코드 검증
+        boolean isValid = emailService.verifyCode(email, code);
+        if (!isValid) {
+            return ResponseEntity.badRequest().body("인증 코드가 일치하지 않습니다.");
+        }
+
+        // 이메일 인증 상태가 완료되었는지 확인
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        String verificationStatus = ops.get("email:verified:" + email);
+        if (verificationStatus == null || !verificationStatus.equals("true")) {
+            return ResponseEntity.badRequest().body("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        // 비밀번호 변경 처리 (이메일을 통해 비밀번호를 찾은 후 새로운 비밀번호로 변경)
+        boolean isPasswordChanged = emailService.changePassword(email, newPassword);
+        if (!isPasswordChanged) {
+            return ResponseEntity.status(500).body("비밀번호 변경에 실패했습니다.");
+        }
+
+        // 인증 완료 상태 삭제 (새 비밀번호 변경 후)
+        redisTemplate.delete("email:verified:" + email);
+
+        return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+    }
 }
