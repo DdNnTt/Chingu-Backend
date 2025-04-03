@@ -3,6 +3,7 @@ package com.chingubackend.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.AbstractPersistable_;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -19,13 +20,38 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username) {
+    public String generateToken(Long id, String username) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Long extractUserId(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Object idObj = claims.get("id");
+            if (idObj == null) {
+                System.out.println("Token does not contain an 'id' claim.");
+                return null;
+            }
+
+            return Long.parseLong(idObj.toString());
+        } catch (ExpiredJwtException e) {
+            System.out.println("Token expired: " + e.getMessage());
+            return null;
+        } catch (JwtException e) {
+            System.out.println("Invalid token: " + e.getMessage());
+            return null;
+        }
     }
 
     public String extractUsername(String token) {
