@@ -1,5 +1,6 @@
 package com.chingubackend.controller;
 
+import com.chingubackend.dto.request.DeleteUserRequest;
 import com.chingubackend.dto.request.UserRequest;
 import com.chingubackend.dto.request.UserUpdateRequest;
 import com.chingubackend.dto.response.UserResponse;
@@ -72,10 +73,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @DeleteMapping("/delete/{userId}")
-    @Operation(summary = "회원 탈퇴", description = "회원 ID를 받아 탈퇴 처리합니다.")
-    public ResponseEntity<String> deleteUser(@PathVariable String userId) {
-        userService.deleteUser(userId);
+    @DeleteMapping("/delete")
+    @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 회원 탈퇴를 진행합니다.")
+    public ResponseEntity<String> deleteUser(@Valid @RequestBody DeleteUserRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        userService.deleteUser(userId, request);
         return ResponseEntity.ok("회원 탈퇴 성공");
     }
 

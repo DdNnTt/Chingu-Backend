@@ -1,5 +1,6 @@
 package com.chingubackend.service;
 
+import com.chingubackend.dto.request.DeleteUserRequest;
 import com.chingubackend.dto.request.UserRequest;
 import com.chingubackend.dto.request.UserUpdateRequest;
 import com.chingubackend.dto.response.UserResponse;
@@ -69,11 +70,15 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(String userId) {
-        if (!userRepository.findByUserId(userId).isPresent()) {
-            throw new IllegalStateException("존재하지 않는 사용자입니다.");
+    public void deleteUser(String userId, DeleteUserRequest request) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-        userRepository.deleteByUserId(userId);
+
+        userRepository.delete(user);
     }
 
     public List<UserResponse> searchUsers(String keyword) {
