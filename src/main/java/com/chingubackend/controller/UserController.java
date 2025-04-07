@@ -1,6 +1,7 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.UserRequest;
+import com.chingubackend.dto.request.UserUpdateRequest;
 import com.chingubackend.dto.response.UserResponse;
 import com.chingubackend.entity.User;
 import com.chingubackend.service.UserService;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -102,5 +104,15 @@ public class UserController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/mypage/edit")
+    @Operation(summary = "마이페이지 수정", description = "로그인한 사용자가 닉네임, 프로필 사진, 자기소개, 비밀번호를 수정합니다.")
+    public ResponseEntity<String> updateMyPage(@RequestBody UserUpdateRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        userService.updateMyPage(userId, request);
+        return ResponseEntity.ok("마이페이지가 성공적으로 수정되었습니다.");
     }
 }
