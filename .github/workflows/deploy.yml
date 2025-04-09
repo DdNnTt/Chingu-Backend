@@ -33,7 +33,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "build/libs/chingu-backend-0.0.1-SNAPSHOT.jar"
+          source: "build/libs/Chingu-Backend-0.0.1-SNAPSHOT.jar"
           target: "~/"
 
       - name: Run app on EC2
