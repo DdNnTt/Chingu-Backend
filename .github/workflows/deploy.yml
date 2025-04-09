@@ -23,6 +23,10 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
+      - name: Check if JAR file exists
+        run: |
+          ls -al build/libs
+
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
