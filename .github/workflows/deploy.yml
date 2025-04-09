@@ -23,27 +23,32 @@ jobs:
         run: ./gradlew clean build -x test
 
       - name: Check if JAR file exists
-        run: |
-          ls -al build/libs
-      - name: Deploy to EC2
+        run: ls -al build/libs
+
+      - name: Copy JAR file to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           source: "build/libs/Chingu-Backend-0.0.1-SNAPSHOT.jar"
-          target: "~/"
+          target: "~"
 
-      - name: Run app on EC2
+      - name: Copy start.sh script to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "start.sh"
+          target: "~"
+
+      - name: Run start.sh on EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            java -version
-            pkill -f 'java -jar' || true
-            ls -al ~
-            nohup java -jar ~/Chingu-Backend-0.0.1-SNAPSHOT.jar > ~/app.log 2>&1 &
-            sleep 5
-            ps -ef | grep java
+            chmod +x ~/start.sh
+            nohup ~/start.sh > ~/startup.log 2>&1 &
