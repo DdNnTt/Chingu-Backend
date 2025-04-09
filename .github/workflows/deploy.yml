@@ -1,0 +1,43 @@
+# .github/workflows/deploy.yml
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 push 될 때마다 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      - name: Deploy to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "build/libs/chingu-backend-0.0.1-SNAPSHOT.jar"
+          target: "~/"
+
+      - name: Run app on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            pkill -f 'java -jar' || true
+            nohup java -jar ~/chingu-backend-0.0.1-SNAPSHOT.jar > ~/app.log 2>&1 &
