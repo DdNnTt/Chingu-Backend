@@ -1,10 +1,9 @@
-# .github/workflows/deploy.yml
 name: Deploy to EC2
 
 on:
   push:
     branches:
-      - main  # main 브랜치에 push 될 때마다 실행
+      - main
 
 jobs:
   deploy:
@@ -27,12 +26,17 @@ jobs:
         run: |
           ls -al build/libs
 
+      - name: Decode SSH key
+        run: |
+          echo "${{ secrets.EC2_KEY }}" | base64 --decode > chingu-key.pem
+          chmod 600 chingu-key.pem
+
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: chingu-key.pem
           source: "build/libs/Chingu-Backend-0.0.1-SNAPSHOT.jar"
           target: "~/"
 
@@ -41,7 +45,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_KEY }}
+          key: chingu-key.pem
           script: |
             pkill -f 'java -jar' || true
             nohup java -jar ~/chingu-backend-0.0.1-SNAPSHOT.jar > ~/app.log 2>&1 &
