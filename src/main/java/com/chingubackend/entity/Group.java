@@ -1,11 +1,14 @@
 package com.chingubackend.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "groups")
+@Table(name = "user_groups") // 예약어 회피
+@NoArgsConstructor
 public class Group {
 
     @Id
@@ -19,11 +22,19 @@ public class Group {
     private String description;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
-    public Group() {}
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
-    // Getter only
+    @Builder
+    public Group(String groupName, String description) {
+        this.groupName = groupName;
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }
@@ -38,14 +49,5 @@ public class Group {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
-    }
-
-    // Setter only where needed
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }

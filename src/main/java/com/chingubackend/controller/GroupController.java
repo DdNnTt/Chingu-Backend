@@ -16,15 +16,13 @@ public class GroupController {
     public GroupController(GroupService groupService) {
         this.groupService = groupService;
     }
+
     @Operation(
             summary = "그룹 생성",
-            description = "새로운 그룹을 생성합니다. 인증 토큰을 헤더에 포함해야 합니다."
+            description = "새로운 그룹을 생성합니다."
     )
     @PostMapping("/create")
-    public ResponseEntity<GroupResponse> createGroup(
-            @RequestBody GroupRequest request,
-            @RequestHeader("Authorization") String authHeader) {
-
+    public ResponseEntity<GroupResponse> createGroup(@RequestBody GroupRequest request) {
         GroupResponse response = groupService.createGroup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

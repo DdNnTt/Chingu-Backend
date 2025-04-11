@@ -15,9 +15,10 @@ public class GroupService {
     }
 
     public GroupResponse createGroup(GroupRequest request) {
-        Group group = new Group();
-        group.setGroupName(request.getGroupName());
-        group.setDescription(request.getDescription());
+        Group group = Group.builder()
+                .groupName(request.getGroupName())
+                .description(request.getDescription())
+                .build();
 
         Group saved = groupRepository.save(group);
 
