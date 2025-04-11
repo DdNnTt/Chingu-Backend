@@ -2,12 +2,14 @@ package com.chingubackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
-@Table(name = "user_groups") // 예약어 회피
+@Table(name = "user_groups")
 @NoArgsConstructor
 public class Group {
 
@@ -33,21 +35,5 @@ public class Group {
     public Group(String groupName, String description) {
         this.groupName = groupName;
         this.description = description;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }
