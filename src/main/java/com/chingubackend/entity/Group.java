@@ -26,14 +26,20 @@ public class Group {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id", nullable = false)
+    private User creator;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
 
     @Builder
-    public Group(String groupName, String description) {
+    public Group(String groupName, String description, User creator) {
         this.groupName = groupName;
         this.description = description;
+        this.creator = creator;
     }
+
 }
