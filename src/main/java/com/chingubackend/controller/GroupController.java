@@ -8,9 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/groups")
 public class GroupController {
+
     private final GroupService groupService;
 
     public GroupController(GroupService groupService) {
@@ -22,7 +25,9 @@ public class GroupController {
             description = "새로운 그룹을 생성합니다."
     )
     @PostMapping("/create")
-    public ResponseEntity<GroupResponse> createGroup(@RequestBody GroupRequest request) {
+    public ResponseEntity<GroupResponse> createGroup(
+            @Valid @RequestBody GroupRequest request) {
+
         GroupResponse response = groupService.createGroup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
