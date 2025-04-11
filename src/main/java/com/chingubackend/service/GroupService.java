@@ -22,11 +22,11 @@ public class GroupService {
 
         Group saved = groupRepository.save(group);
 
-        return new GroupResponse(
-                saved.getId(),
-                saved.getGroupName(),
-                saved.getDescription(),
-                saved.getCreatedAt()
-        );
+        return GroupResponse.builder()
+                .groupId(saved.getId())
+                .groupName(saved.getGroupName())
+                .description(saved.getDescription())
+                .createdAt(saved.getCreatedAt())
+                .build();
     }
 }
