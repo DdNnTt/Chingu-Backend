@@ -1,11 +1,16 @@
 package com.chingubackend.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
-@Table(name = "groups")
+@Table(name = "user_groups")
+@NoArgsConstructor
 public class Group {
 
     @Id
@@ -19,33 +24,22 @@ public class Group {
     private String description;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
-    public Group() {}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id", nullable = false)
+    private User creator;
 
-    // Getter only
-    public Long getId() {
-        return id;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    // Setter only where needed
-    public void setGroupName(String groupName) {
+    @Builder
+    public Group(String groupName, String description, User creator) {
         this.groupName = groupName;
+        this.description = description;
+        this.creator = creator;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }
