@@ -158,7 +158,6 @@ public class GroupService {
         return invites.stream()
                 .map(invite -> GroupInviteResponse.builder()
                         .requestId(invite.getId())
-                        .friendUserId(invite.getSender().getId())
                         .nickname(invite.getSender().getNickname())
                         .name(invite.getSender().getName())
                         .requestStatus(invite.getRequestStatus().name())
@@ -169,7 +168,7 @@ public class GroupService {
     }
 
     @Transactional
-    public GroupInviteResponse respondToInvite(Long requestId, Long userId, boolean accept) {
+    public GroupInviteResponse.GroupInviteResponseWithoutFriend respondToInvite(Long requestId, Long userId, RequestStatus status) {
         GroupInvite groupInvite = groupInviteRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 초대 요청을 찾을 수 없습니다."));
 
@@ -181,7 +180,9 @@ public class GroupService {
             throw new IllegalStateException("그룹 정보가 없습니다.");
         }
 
-        if (accept) {
+        Long groupId = groupInvite.getGroup() != null ? groupInvite.getGroup().getId() : null;
+
+        if (status == RequestStatus.ACCEPTED) {
             groupInvite.updateStatus(RequestStatus.ACCEPTED);
 
             Optional<GroupMember> existingMember = groupMemberRepository.findByGroupIdAndUserId(groupInvite.getGroup().getId(), userId);
@@ -196,7 +197,7 @@ public class GroupService {
                     .build();
 
             groupMemberRepository.save(groupMember);
-        } else {
+        } else if (status == RequestStatus.REJECTED) {
             groupInvite.updateStatus(RequestStatus.REJECTED);
         }
 
@@ -204,10 +205,13 @@ public class GroupService {
 
         return GroupInviteResponse.builder()
                 .requestId(groupInvite.getId())
+                .friendUserId(groupInvite.getReceiver().getId())
                 .nickname(groupInvite.getReceiver().getNickname())
                 .name(groupInvite.getReceiver().getName())
                 .requestStatus(groupInvite.getRequestStatus().name())
                 .createdAt(groupInvite.getCreatedAt())
-                .build();
+                .groupId(groupId)
+                .build()
+                .toResponseWithoutFriend();
     }
 }

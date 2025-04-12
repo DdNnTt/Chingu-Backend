@@ -1,9 +1,11 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.GroupInviteRequest;
+import com.chingubackend.dto.request.GroupInviteStatusRequest;
 import com.chingubackend.dto.request.GroupRequest;
 import com.chingubackend.dto.response.GroupDeleteResponse;
 import com.chingubackend.dto.response.GroupInviteResponse;
+import com.chingubackend.dto.response.GroupInviteResponse.GroupInviteResponseWithoutFriend;
 import com.chingubackend.dto.response.GroupResponse;
 import com.chingubackend.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -83,14 +85,16 @@ public class GroupController {
             description = "그룹 초대를 수락하거나 거절합니다."
     )
     @PatchMapping("/invites/{requestId}")
-    public ResponseEntity<GroupInviteResponse> respondToInvite(
+    public ResponseEntity<GroupInviteResponseWithoutFriend> respondToInvite(
             @PathVariable Long requestId,
-            @RequestParam boolean accept,
-            HttpServletRequest request) {
+            @Valid @RequestBody GroupInviteStatusRequest request,
+            HttpServletRequest httpRequest) {
 
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = (Long) httpRequest.getAttribute("userId");
 
-        GroupInviteResponse response = groupService.respondToInvite(requestId, userId, accept);
+        GroupInviteResponseWithoutFriend response = groupService.respondToInvite(
+                requestId, userId, request.getStatus()
+        );
         return ResponseEntity.ok(response);
     }
 
