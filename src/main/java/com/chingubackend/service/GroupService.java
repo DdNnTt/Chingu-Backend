@@ -7,10 +7,12 @@ import com.chingubackend.dto.response.GroupResponse;
 import com.chingubackend.entity.Friend;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupInvite;
+import com.chingubackend.entity.GroupMember;
 import com.chingubackend.entity.User;
 import com.chingubackend.model.RequestStatus;
 import com.chingubackend.repository.FriendRepository;
 import com.chingubackend.repository.GroupInviteRepository;
+import com.chingubackend.repository.GroupMemberRepository;
 import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,17 +32,21 @@ public class GroupService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final GroupInviteRepository groupInviteRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     public GroupService(GroupRepository groupRepository,
                         UserRepository userRepository,
                         FriendRepository friendRepository,
-                        GroupInviteRepository groupInviteRepository) {
+                        GroupInviteRepository groupInviteRepository,
+                        GroupMemberRepository groupMemberRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.friendRepository = friendRepository;
         this.groupInviteRepository = groupInviteRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
+    @Transactional
     public GroupResponse createGroup(GroupRequest request, HttpServletRequest httpRequest) {
         Long userId = (Long) httpRequest.getAttribute("userId");
 
@@ -80,6 +86,7 @@ public class GroupService {
                 .build();
     }
 
+    @Transactional
     public List<GroupInviteResponse> inviteFriendsToGroup(Long groupId, Long userId, List<Long> friendUserIds) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다."));
@@ -87,12 +94,15 @@ public class GroupService {
         User inviter = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
+        List<GroupInvite> groupInvites = groupInviteRepository.findAllByGroupIdWithGroup(groupId);
+
         return friendUserIds.stream()
                 .map(friendUserId -> {
                     Optional<Friend> acceptedFriend = friendRepository.findAcceptedFriend(userId, friendUserId);
                     if (acceptedFriend.isPresent()) {
-                        Optional<GroupInvite> existingInvite =
-                                groupInviteRepository.findByGroupIdAndSenderIdAndReceiverId(groupId, userId, friendUserId);
+                        Optional<GroupInvite> existingInvite = groupInvites.stream()
+                                .filter(invite -> invite.getReceiver().getId().equals(friendUserId))
+                                .findFirst();
 
                         if (existingInvite.isPresent()) {
                             return GroupInviteResponse.builder()
@@ -100,8 +110,9 @@ public class GroupService {
                                     .friendUserId(friendUserId)
                                     .nickname(existingInvite.get().getReceiver().getNickname())
                                     .name(existingInvite.get().getReceiver().getName())
-                                    .requestStatus("이미 초대한 친구입니다.")
+                                    .requestStatus(existingInvite.get().getRequestStatus().name())
                                     .createdAt(existingInvite.get().getCreatedAt())
+                                    .groupId(existingInvite.get().getGroup().getId())
                                     .build();
                         } else {
                             User receiver = userRepository.findById(friendUserId)
@@ -110,7 +121,7 @@ public class GroupService {
                             GroupInvite newInvite = GroupInvite.builder()
                                     .group(group)
                                     .sender(inviter)
-                                    .receiver(userRepository.findById(friendUserId).orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다.")))
+                                    .receiver(receiver)
                                     .requestStatus(RequestStatus.PENDING)
                                     .build();
 
@@ -123,6 +134,7 @@ public class GroupService {
                                     .name(receiver.getName())
                                     .requestStatus(RequestStatus.PENDING.name())
                                     .createdAt(savedInvite.getCreatedAt())
+                                    .groupId(savedInvite.getGroup().getId())
                                     .build();
                         }
                     } else {
@@ -132,14 +144,16 @@ public class GroupService {
                                 .name("N/A")
                                 .requestStatus("친구 관계가 아닙니다.")
                                 .createdAt(LocalDateTime.now())
+                                .groupId(null)
                                 .build();
                     }
                 })
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public List<GroupInviteResponse> getReceivedInvites(Long userId) {
-        List<GroupInvite> invites = groupInviteRepository.findByReceiverId(userId);
+        List<GroupInvite> invites = groupInviteRepository.findByReceiverIdWithGroup(userId);
 
         return invites.stream()
                 .map(invite -> GroupInviteResponse.builder()
@@ -149,7 +163,51 @@ public class GroupService {
                         .name(invite.getSender().getName())
                         .requestStatus(invite.getRequestStatus().name())
                         .createdAt(invite.getCreatedAt())
+                        .groupId(invite.getGroup().getId())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public GroupInviteResponse respondToInvite(Long requestId, Long userId, boolean accept) {
+        GroupInvite groupInvite = groupInviteRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 초대 요청을 찾을 수 없습니다."));
+
+        if (!groupInvite.getReceiver().getId().equals(userId)) {
+            throw new AccessDeniedException("이 초대는 해당 사용자만 처리할 수 있습니다.");
+        }
+
+        if (groupInvite.getGroup() == null) {
+            throw new IllegalStateException("그룹 정보가 없습니다.");
+        }
+
+        if (accept) {
+            groupInvite.updateStatus(RequestStatus.ACCEPTED);
+
+            Optional<GroupMember> existingMember = groupMemberRepository.findByGroupIdAndUserId(groupInvite.getGroup().getId(), userId);
+            if (existingMember.isPresent()) {
+                throw new IllegalArgumentException("이미 그룹에 가입된 사용자입니다.");
+            }
+
+            GroupMember groupMember = GroupMember.builder()
+                    .group(groupInvite.getGroup())
+                    .user(groupInvite.getReceiver())
+                    .status(RequestStatus.ACCEPTED)
+                    .build();
+
+            groupMemberRepository.save(groupMember);
+        } else {
+            groupInvite.updateStatus(RequestStatus.REJECTED);
+        }
+
+        groupInviteRepository.save(groupInvite);
+
+        return GroupInviteResponse.builder()
+                .requestId(groupInvite.getId())
+                .nickname(groupInvite.getReceiver().getNickname())
+                .name(groupInvite.getReceiver().getName())
+                .requestStatus(groupInvite.getRequestStatus().name())
+                .createdAt(groupInvite.getCreatedAt())
+                .build();
     }
 }

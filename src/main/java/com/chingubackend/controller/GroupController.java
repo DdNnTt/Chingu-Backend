@@ -77,4 +77,21 @@ public class GroupController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(
+            summary = "그룹 초대 응답",
+            description = "그룹 초대를 수락하거나 거절합니다."
+    )
+    @PatchMapping("/invites/{requestId}")
+    public ResponseEntity<GroupInviteResponse> respondToInvite(
+            @PathVariable Long requestId,
+            @RequestParam boolean accept,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+
+        GroupInviteResponse response = groupService.respondToInvite(requestId, userId, accept);
+        return ResponseEntity.ok(response);
+    }
+
 }
