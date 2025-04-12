@@ -137,4 +137,19 @@ public class GroupService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public List<GroupInviteResponse> getReceivedInvites(Long userId) {
+        List<GroupInvite> invites = groupInviteRepository.findByReceiverId(userId);
+
+        return invites.stream()
+                .map(invite -> GroupInviteResponse.builder()
+                        .requestId(invite.getId())
+                        .friendUserId(invite.getSender().getId())
+                        .nickname(invite.getSender().getNickname())
+                        .name(invite.getSender().getName())
+                        .requestStatus(invite.getRequestStatus().name())
+                        .createdAt(invite.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }

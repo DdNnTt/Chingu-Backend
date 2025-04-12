@@ -65,4 +65,16 @@ public class GroupController {
         List<GroupInviteResponse> response = groupService.inviteFriendsToGroup(groupId, userId, request.getFriendUserIds());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @Operation(
+            summary = "초대 받은 그룹 목록 조회",
+            description = "로그인한 사용자가 초대 받은 그룹 목록을 조회합니다."
+    )
+    @GetMapping("/invites")
+    public ResponseEntity<List<GroupInviteResponse>> getReceivedInvites(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        List<GroupInviteResponse> response = groupService.getReceivedInvites(userId);
+
+        return ResponseEntity.ok(response);
+    }
 }
