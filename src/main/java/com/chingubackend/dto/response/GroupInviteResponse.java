@@ -13,4 +13,5 @@ public class GroupInviteResponse {
     private String name;
     private String requestStatus;
     private LocalDateTime createdAt;
+    private Long groupId;
 }
