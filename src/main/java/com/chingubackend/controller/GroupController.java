@@ -1,12 +1,15 @@
 package com.chingubackend.controller;
 
+import com.chingubackend.dto.request.GroupInviteRequest;
 import com.chingubackend.dto.request.GroupRequest;
 import com.chingubackend.dto.response.GroupDeleteResponse;
+import com.chingubackend.dto.response.GroupInviteResponse;
 import com.chingubackend.dto.response.GroupResponse;
 import com.chingubackend.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +49,20 @@ public class GroupController {
         Long userId = (Long) request.getAttribute("userId");
         GroupDeleteResponse response = groupService.deleteGroup(groupId, userId);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "그룹 친구 초대",
+            description = "친구 관계인 사용자들에게 그룹 초대 요청을 보냅니다."
+    )
+    @PostMapping("/{groupId}/invite")
+    public ResponseEntity<List<GroupInviteResponse>> inviteFriendsToGroup(
+            @PathVariable Long groupId,
+            @Valid @RequestBody GroupInviteRequest request,
+            HttpServletRequest httpRequest) {
+
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        List<GroupInviteResponse> response = groupService.inviteFriendsToGroup(groupId, userId, request.getFriendUserIds());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
