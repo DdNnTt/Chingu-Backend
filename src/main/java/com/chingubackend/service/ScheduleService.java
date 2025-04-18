@@ -19,9 +19,9 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
 
-    public Schedule addSchedule(ScheduleRequest scheduleRequest) {
-        User user = userRepository.findById(scheduleRequest.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다. 확인 부탁드리겠습니다. : " + scheduleRequest.getUserId()));
+    public Schedule addSchedule(Long userId, ScheduleRequest scheduleRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다. 확인 부탁드립니다. : " + userId));
 
         Schedule schedule = Schedule.builder()
                 .user(user)
@@ -39,9 +39,13 @@ public class ScheduleService {
         return scheduleRepository.findByUser(user);
     }
 
-    public Schedule updateSchedule(Long scheduleId, ScheduleRequest request) {
+    public Schedule updateSchedule(Long userId, Long scheduleId, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스케줄 ID가 존재하지 않습니다. 확인 부탁드리겠습니다 : " + scheduleId));
+
+        if (!schedule.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("해당 스케줄에 대한 수정 권한이 없습니다.");
+        }
 
         if (request.getTitle() != null) {
             schedule.setTitle(request.getTitle());
@@ -56,9 +60,14 @@ public class ScheduleService {
         return scheduleRepository.save(schedule);
     }
 
-    public void deleteSchedule(Long scheduleId) {
+    public void deleteSchedule(Long userId, Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스케줄 ID가 존재하지 않습니다. 확인 부탁드리겠습니다 : " + scheduleId));
+
+        if (!schedule.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("해당 스케줄에 대한 삭제 권한이 없습니다.");
+        }
+
         scheduleRepository.delete(schedule);
     }
 }
