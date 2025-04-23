@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendRequest {
-    private Long userId;
     private Long friendId;
 
     @Getter
@@ -30,7 +29,6 @@ public class FriendRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ResponseRequest {
-        private Long userId;
         private Long friendId;
         private String status;
     }

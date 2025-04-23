@@ -5,6 +5,7 @@ import com.chingubackend.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,29 +22,37 @@ public class FriendController {
 
     @Operation(summary = "친구 요청 전송", description = "다른 사용자에게 친구 요청을 전송합니다.")
     @PostMapping("/request")
-    public ResponseEntity<String> sendFriendRequest(@RequestBody FriendRequest dto){
-        String resultMessage = friendService.sendFriendRequest(dto);
+    public ResponseEntity<String> sendFriendRequest(
+            @RequestBody FriendRequest dto,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        String resultMessage = friendService.sendFriendRequest(userId, dto);
         return ResponseEntity.ok(resultMessage);
     }
 
     @Operation(summary = "받은 친구 요청 목록", description = "로그인한 사용자가 받은 친구 요청 목록을 조회합니다.")
     @GetMapping("/requests")
-    public ResponseEntity<List<FriendRequest.PendingRequest>> getReceivedRequests(
-            @Parameter(description = "로그인한 사용자 ID", example = "1") @RequestParam Long userId) {
+    public ResponseEntity<List<FriendRequest.PendingRequest>> getReceivedRequests(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         return ResponseEntity.ok(friendService.getReceivedFriendRequests(userId));
     }
 
     @Operation(summary = "친구 요청 응답", description = "수신한 친구 요청에 수락 또는 거절로 응답합니다.")
     @PutMapping("/respond")
-    public ResponseEntity<String> respondToFriendRequest(@RequestBody FriendRequest.ResponseRequest dto) {
-        String result = friendService.respondToFriendRequest(dto);
+    public ResponseEntity<String> respondToFriendRequest(
+            @RequestBody FriendRequest.ResponseRequest dto,
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        String result = friendService.respondToFriendRequest(userId, dto);
         return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "친구 목록 조회", description = "수락된 친구 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<List<FriendRequest.FriendList>> getAcceptedFriends(
-            @Parameter(description = "로그인한 사용자 ID", example = "1") @RequestParam Long userId) {
+    public ResponseEntity<List<FriendRequest.FriendList>> getAcceptedFriends(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
         List<FriendRequest.FriendList> friends = friendService.getAcceptedFriends(userId);
         return ResponseEntity.ok(friends);
     }
@@ -52,11 +61,10 @@ public class FriendController {
     @DeleteMapping("/{friendUserId}")
     public ResponseEntity<Map<String, Object>> deleteFriend(
             @Parameter(description = "삭제할 친구의 사용자 ID", example = "2") @PathVariable Long friendUserId,
-            @Parameter(description = "로그인한 사용자 ID", example = "1") @RequestParam Long userId // 인증 붙으면 @AuthenticationPrincipal 로 대체
-    ) {
+            HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
         Map<String, Object> result = friendService.deleteFriend(userId, friendUserId);
         return ResponseEntity.ok(result);
     }
-
-
 }
