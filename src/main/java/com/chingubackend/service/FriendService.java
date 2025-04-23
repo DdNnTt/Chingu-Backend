@@ -26,6 +26,14 @@ public class FriendService {
     public String sendFriendRequest(Long userId, FriendRequest dto) {
         Long friendId = dto.getFriendId();
 
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+
+        if (user == null || friend == null) {
+            return "존재하지 않는 사용자 ID가 포함되어 있습니다.";
+        }
+
+
         if (userId.equals(friendId)) {
             return "자기 자신에게는 친구 요청을 보낼 수 없습니다.";
         }
