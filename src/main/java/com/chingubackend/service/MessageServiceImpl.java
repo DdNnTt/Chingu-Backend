@@ -122,4 +122,15 @@ public class MessageServiceImpl implements MessageService {
 
         return new MessageReadResponse(messageId, true);
     }
+
+    @Override
+    public List<MessageResponse> readAllSentMessages(UserDetails userDetails) {
+        User sender = userRepository.findByUserId(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+
+        return messageRepository.findAllBySenderOrderBySendTimeDesc(sender)
+                .stream()
+                .map(MessageResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

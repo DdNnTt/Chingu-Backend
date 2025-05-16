@@ -19,4 +19,7 @@ public interface MessageService {
     // 특정 메시지 ID로 단일 쪽지 조회
     MessageResponse getMessage(Long messageId, UserDetails userDetails); // 조회
     MessageReadResponse markAsRead(Long messageId, UserDetails userDetails) throws Exception; // 읽음 처리
+
+    //특정 유저의 보낸 쪽지 조회
+    List<MessageResponse> readAllSentMessages(UserDetails userDetails);
 }

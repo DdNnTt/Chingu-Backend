@@ -50,4 +50,11 @@ public class MessageController {
         MessageReadResponse response = messageService.markAsRead(messageId, userDetails);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/sent")
+    public ResponseEntity<List<MessageResponse>> readAllSentMessages(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        List<MessageResponse> messages = messageService.readAllSentMessages(userDetails);
+        return ResponseEntity.ok(messages);
+    }
 }
