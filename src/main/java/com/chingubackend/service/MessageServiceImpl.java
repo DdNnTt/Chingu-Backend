@@ -5,6 +5,7 @@ import com.chingubackend.dto.request.MessageRequest;
 import com.chingubackend.dto.response.MessageResponse;
 import com.chingubackend.entity.Message;
 import com.chingubackend.entity.User;
+import com.chingubackend.repository.FriendRepository;
 import com.chingubackend.repository.MessageRepository;
 import com.chingubackend.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +24,15 @@ public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final WebSocketMessageHandler webSocketMessageHandler;
+    private final FriendRepository friendRepository;
 
     public MessageServiceImpl(MessageRepository messageRepository,
                               UserRepository userRepository,
-                              WebSocketMessageHandler webSocketMessageHandler) {
+                              WebSocketMessageHandler webSocketMessageHandler, FriendRepository friendRepository) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.webSocketMessageHandler = webSocketMessageHandler;
+        this.friendRepository = friendRepository;
     }
 
     @Override
@@ -44,12 +47,21 @@ public class MessageServiceImpl implements MessageService {
         User receiver = userRepository.findByNickname(messageRequest.getReceiver())
                 .orElseThrow(() -> new IllegalArgumentException("받는 분이 존재하지 않습니다."));
 
+        // ✅ 친구 관계 확인
+        boolean isFriend = friendRepository.existsFriendship(sender.getId(), receiver.getId())
+                || friendRepository.existsFriendship(receiver.getId(), sender.getId());
+
+        if (!isFriend) {
+            throw new IllegalStateException("쪽지는 친구에게만 보낼 수 있습니다.");
+        }
+
         Message messageEntity = messageRequest.toEntity(sender, receiver);
         messageRepository.save(messageEntity);
 
         try {
             long unreadCount = messageRepository.countByReceiverIdAndReadStatus(receiver.getId(), false);
-            webSocketMessageHandler.sendNotification(receiver.getUserId(), "새로운 쪽지가 도착했습니다. 읽지 않은 쪽지 수: " + unreadCount);
+            webSocketMessageHandler.sendNotification(receiver.getUserId(),
+                    "새로운 쪽지가 도착했습니다. 읽지 않은 쪽지 수: " + unreadCount);
         } catch (Exception e) {
             log.warn("웹소켓 알림 전송 실패: {}", e.getMessage());
         }
