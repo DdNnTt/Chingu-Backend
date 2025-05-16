@@ -2,6 +2,7 @@ package com.chingubackend.service;
 
 import com.chingubackend.config.WebSocketMessageHandler;
 import com.chingubackend.dto.request.MessageRequest;
+import com.chingubackend.dto.response.MessageReadResponse;
 import com.chingubackend.dto.response.MessageResponse;
 import com.chingubackend.entity.Message;
 import com.chingubackend.entity.User;
@@ -86,20 +87,39 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public MessageResponse readMessage(Long messageId, UserDetails userDetails) {
+    public MessageResponse getMessage(Long messageId, UserDetails userDetails) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않습니다."));
 
-        log.info("(MessageService) readMessage 실행: messageId = {}", messageId);
-
-        Message messageEntity = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 쪽지가 존재하지 않습니다."));
-
-        if (!messageEntity.getReceiver().getUserId().equals(userDetails.getUsername())) {
-            throw new AccessDeniedException("쪽지를 읽을 권한이 없습니다.");
+        if (!message.getReceiver().getUserId().equals(userDetails.getUsername())) {
+            throw new AccessDeniedException("조회 권한이 없습니다.");
         }
 
-        messageEntity.setReadStatus(true); // 읽음 처리
-        messageRepository.save(messageEntity);
+        return MessageResponse.fromEntity(message);
+    }
 
-        return MessageResponse.fromEntity(messageEntity);
+    @Override
+    public MessageReadResponse markAsRead(Long messageId, UserDetails userDetails) throws Exception {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않습니다."));
+
+        if (!message.getReceiver().getUserId().equals(userDetails.getUsername())) {
+            throw new AccessDeniedException("읽을 권한이 없습니다.");
+        }
+
+        boolean wasAlreadyRead = message.isReadStatus();
+
+        if (!wasAlreadyRead) {
+            message.setReadStatus(true);
+            messageRepository.save(message);
+
+            long unreadCount = messageRepository.countByReceiverIdAndReadStatus(message.getReceiver().getId(), false);
+            webSocketMessageHandler.sendNotification(
+                    message.getReceiver().getUserId(),
+                    "읽지 않은 쪽지 수: " + unreadCount
+            );
+        }
+
+        return new MessageReadResponse(messageId, true);
     }
 }

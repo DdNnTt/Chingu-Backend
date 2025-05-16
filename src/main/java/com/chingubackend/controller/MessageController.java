@@ -1,6 +1,7 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.MessageRequest;
+import com.chingubackend.dto.response.MessageReadResponse;
 import com.chingubackend.dto.response.MessageResponse;
 import com.chingubackend.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -36,11 +37,17 @@ public class MessageController {
     }
 
     @GetMapping("/read/{messageId}") // 특정 쪽지 조회
-    public ResponseEntity<MessageResponse> readMessage(
-            @PathVariable Long messageId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        MessageResponse message = messageService.readMessage(messageId, userDetails);
+    public ResponseEntity<MessageResponse> getMessage(@PathVariable Long messageId, @AuthenticationPrincipal UserDetails userDetails) {
+        MessageResponse message = messageService.getMessage(messageId, userDetails);
         return ResponseEntity.ok(message);
+    }
+
+    @PatchMapping("/read/{messageId}")
+    public ResponseEntity<MessageReadResponse> markMessageAsRead(
+            @PathVariable Long messageId,
+            @AuthenticationPrincipal UserDetails userDetails) throws Exception {
+
+        MessageReadResponse response = messageService.markAsRead(messageId, userDetails);
+        return ResponseEntity.ok(response);
     }
 }
