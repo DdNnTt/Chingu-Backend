@@ -214,4 +214,38 @@ public class GroupService {
                 .build()
                 .toResponseWithoutFriend();
     }
+
+    @Transactional
+    public List<GroupResponse> getMyGroups(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // 내가 생성한 그룹
+        List<Group> createdGroups = groupRepository.findByCreatorId(userId);
+
+        // 내가 초대를 수락한 그룹 (group_members 테이블 기준)
+        List<GroupMember> memberGroups = groupMemberRepository.findByUserIdAndStatus(userId, RequestStatus.ACCEPTED);
+
+        List<Group> joinedGroups = memberGroups.stream()
+                .map(GroupMember::getGroup)
+                .collect(Collectors.toList());
+
+        // 중복 제거 (예: 생성자이면서 구성원일 수 있으므로)
+        List<Group> allGroups = createdGroups;
+        joinedGroups.forEach(group -> {
+            if (!allGroups.contains(group)) {
+                allGroups.add(group);
+            }
+        });
+
+        return allGroups.stream()
+                .map(group -> GroupResponse.builder()
+                        .groupId(group.getId())
+                        .groupName(group.getGroupName())
+                        .description(group.getDescription())
+                        .createdAt(group.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }
