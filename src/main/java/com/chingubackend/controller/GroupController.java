@@ -105,4 +105,9 @@ public class GroupController {
         return ResponseEntity.ok(groups);
     }
 
+    @GetMapping("/{groupId}/invites")
+    public ResponseEntity<List<GroupInviteResponse>> getGroupInvites(@PathVariable Long groupId) {
+        List<GroupInviteResponse> invites = groupService.getGroupInvites(groupId);
+        return ResponseEntity.ok(invites);
+    }
 }

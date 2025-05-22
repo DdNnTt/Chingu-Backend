@@ -248,4 +248,24 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public List<GroupInviteResponse> getGroupInvites(Long groupId) {
+        // 그룹 존재 여부 체크
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
+
+        List<GroupInvite> invites = groupInviteRepository.findAllByGroupIdWithGroup(groupId);
+
+        return invites.stream()
+                .map(invite -> GroupInviteResponse.builder()
+                        .requestId(invite.getId())
+                        .friendUserId(invite.getReceiver().getId())
+                        .nickname(invite.getReceiver().getNickname())
+                        .name(invite.getReceiver().getName())
+                        .requestStatus(invite.getRequestStatus().name())
+                        .createdAt(invite.getCreatedAt())
+                        .groupId(invite.getGroup().getId())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }
