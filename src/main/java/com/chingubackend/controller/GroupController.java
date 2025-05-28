@@ -98,4 +98,16 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/mygroups")
+    public ResponseEntity<List<GroupResponse>> getMyGroups(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        List<GroupResponse> groups = groupService.getMyGroups(userId);
+        return ResponseEntity.ok(groups);
+    }
+
+    @GetMapping("/{groupId}/invites")
+    public ResponseEntity<List<GroupInviteResponse>> getGroupInvites(@PathVariable Long groupId) {
+        List<GroupInviteResponse> invites = groupService.getGroupInvites(groupId);
+        return ResponseEntity.ok(invites);
+    }
 }
