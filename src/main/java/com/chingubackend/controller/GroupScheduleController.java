@@ -11,8 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -68,5 +66,29 @@ public class GroupScheduleController {
                 "scheduleId", scheduleId,
                 "groupId", groupId
         ));
+    }
+
+    @GetMapping("/{scheduleId}")
+    @Operation(summary = "그룹 캘린더 일정 상세 조회", description = "특정 그룹 내 특정 일정의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 상세 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "404", description = "일정 또는 그룹 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    public ResponseEntity<GroupScheduleResponse> getScheduleDetail(
+            @PathVariable Long groupId,
+            @PathVariable Long scheduleId,
+            HttpServletRequest request
+    ) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        GroupSchedule schedule = groupScheduleService.getScheduleDetail(groupId, scheduleId);
+
+        GroupScheduleResponse response = new GroupScheduleResponse(schedule);
+        return ResponseEntity.ok(response);
     }
 }

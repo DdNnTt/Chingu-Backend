@@ -1,7 +1,6 @@
 package com.chingubackend.service;
 
 import com.chingubackend.dto.request.GroupScheduleRequest;
-import com.chingubackend.dto.response.GroupScheduleResponse;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupSchedule;
 import com.chingubackend.entity.User;
@@ -12,8 +11,6 @@ import com.chingubackend.repository.GroupScheduleRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,5 +61,20 @@ public class GroupScheduleService {
         }
 
         groupScheduleRepository.delete(schedule);
+    }
+
+    @Transactional(readOnly = true)
+    public GroupSchedule getScheduleDetail(Long groupId, Long scheduleId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("그룹을 찾을 수 없습니다."));
+
+        GroupSchedule schedule = groupScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+
+        if (!schedule.getGroup().getId().equals(group.getId())) {
+            throw new IllegalArgumentException("해당 일정은 그룹에 속하지 않습니다.");
+        }
+
+        return schedule;
     }
 }
