@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,5 +39,34 @@ public class GroupScheduleController {
         GroupSchedule schedule = groupScheduleService.createSchedule(groupId, request, httpRequest);
         GroupScheduleResponse response = new GroupScheduleResponse(schedule);
         return ResponseEntity.status(201).body(response);
+    }
+
+    @DeleteMapping("/{scheduleId}")
+    @Operation(summary = "그룹 캘린더 일정 삭제", description = "로그인한 작성자만 자신의 그룹 캘린더 일정을 삭제할 수 있습니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "403", description = "삭제 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "일정 또는 그룹 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    public ResponseEntity<?> deleteSchedule(
+            @PathVariable Long groupId,
+            @PathVariable Long scheduleId,
+            HttpServletRequest request
+    ) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        groupScheduleService.deleteSchedule(groupId, scheduleId, userId);
+
+        return ResponseEntity.ok().body(Map.of(
+                "message", "캘린더 일정이 성공적으로 삭제되었습니다.",
+                "scheduleId", scheduleId,
+                "groupId", groupId
+        ));
     }
 }
