@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -90,5 +91,24 @@ public class GroupScheduleController {
 
         GroupScheduleResponse response = new GroupScheduleResponse(schedule);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    @Operation(summary = "그룹 캘린더 일정 리스트 조회", description = "특정 그룹에 속한 모든 캘린더 일정을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "그룹 스케줄 목록 조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "404", description = "그룹 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    public ResponseEntity<List<GroupScheduleResponse>> getSchedules(
+            @PathVariable Long groupId,
+            HttpServletRequest request
+    ) {
+        List<GroupSchedule> schedules = groupScheduleService.getSchedules(groupId);
+        List<GroupScheduleResponse> responseList = schedules.stream()
+                .map(GroupScheduleResponse::new)
+                .toList();
+        return ResponseEntity.ok(responseList);
     }
 }

@@ -10,6 +10,7 @@ import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.GroupScheduleRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -76,5 +77,13 @@ public class GroupScheduleService {
         }
 
         return schedule;
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupSchedule> getSchedules(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("그룹을 찾을 수 없습니다."));
+
+        return groupScheduleRepository.findByGroup(group);
     }
 }
