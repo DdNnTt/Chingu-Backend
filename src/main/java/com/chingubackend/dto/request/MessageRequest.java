@@ -26,7 +26,9 @@ public class MessageRequest {
                 receiverEntity,
                 content,
                 null, // 송신 시간은 Entity에서 처리
-                false // 읽음 여부 기본값
+                false, // 읽음 여부 기본값
+                false,                 // senderDeleted
+                false                  // receiverDeleted
         );
     }
 }

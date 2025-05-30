@@ -118,4 +118,36 @@ public class MessageService {
                 .map(MessageResponse::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    public MessageResponse deleteMessage(Long messageId, UserDetails userDetails) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않습니다."));
+
+        // 삭제 권한 확인
+        String requesterId = userDetails.getUsername();
+        boolean isSender = message.getSender().getUserId().equals(requesterId);
+        boolean isReceiver = message.getReceiver().getUserId().equals(requesterId);
+
+        if (!isSender && !isReceiver) {
+            throw new AccessDeniedException("삭제 권한이 없습니다.");
+        }
+
+        if (isSender){
+            message.setSenderDeleted(true);
+        }
+        if (isReceiver){
+            message.setReceiverDeleted(true);
+        }
+
+//        // 둘 다 삭제했을 경우 완전 삭제
+//        if (message.isSenderDeleted() && message.isReceiverDeleted()) {
+//            messageRepository.delete(message);
+//        } else {
+//            messageRepository.save(message);
+//        }
+        messageRepository.save(message);
+
+        return MessageResponse.fromEntity(message);
+    }
+
 }

@@ -30,4 +30,12 @@ public class Message {
     private LocalDateTime sendTime; // 송신 시간
     @ColumnDefault("FALSE")
     private boolean readStatus; // 읽음 여부
+
+    @Column(name = "sender_deleted", nullable = false)
+    @ColumnDefault("FALSE")
+    private boolean senderDeleted; // 보낸 아이디에서 삭제
+
+    @Column(name = "receiver_deleted", nullable = false)
+    @ColumnDefault("FALSE")
+    private boolean receiverDeleted; // 받은 아이디에서 삭제
 }

@@ -15,6 +15,8 @@ public class MessageResponse {
     private String content;         // 내용
     private LocalDateTime sendTime; // 보낸 시간
     private boolean readStatus;     // 읽음 여부
+    private boolean senderDeleted;
+    private boolean receiverDeleted;
 
     public static MessageResponse fromEntity(Message entity) {
         return new MessageResponse(
@@ -23,7 +25,9 @@ public class MessageResponse {
                 entity.getReceiver().getNickname(),
                 entity.getContent(),
                 entity.getSendTime(),
-                entity.isReadStatus()
+                entity.isReadStatus(),
+                entity.isSenderDeleted(),
+                entity.isReceiverDeleted()
         );
     }
 }

@@ -57,4 +57,13 @@ public class MessageController {
         List<MessageResponse> messages = messageService.readAllSentMessages(userDetails);
         return ResponseEntity.ok(messages);
     }
+
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<MessageResponse> deleteMessage(
+            @PathVariable Long messageId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        MessageResponse response = messageService.deleteMessage(messageId, userDetails);
+        return ResponseEntity.ok(response); // 삭제된 메시지 정보를 응답
+    }
 }
