@@ -1,11 +1,12 @@
 package com.chingubackend.dto.request;
 
-import lombok.Data;
-
 import java.time.LocalDate;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class ScheduleRequest {
+@Getter
+@Setter
+public class GroupScheduleRequest {
     private String title;
     private String description;
     private LocalDate scheduleDate;

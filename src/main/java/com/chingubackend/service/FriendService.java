@@ -23,22 +23,29 @@ public class FriendService {
     private final FriendshipScoreRepository friendshipScoreRepository;
     private final UserRepository userRepository;
 
-    public String sendFriendRequest(FriendRequest dto){
-        Long userId = dto.getUserId();
+    public String sendFriendRequest(Long userId, FriendRequest dto) {
         Long friendId = dto.getFriendId();
+
+        User user = userRepository.findById(userId).orElse(null);
+        User friend = userRepository.findById(friendId).orElse(null);
+
+        if (user == null || friend == null) {
+            return "존재하지 않는 사용자 ID가 포함되어 있습니다.";
+        }
+
 
         if (userId.equals(friendId)) {
             return "자기 자신에게는 친구 요청을 보낼 수 없습니다.";
         }
 
         boolean alreadyFriend = friendRepository.existsByUserIdAndFriendIdAndRequestStatus(userId, friendId, RequestStatus.ACCEPTED)
-                                || friendRepository.existsByUserIdAndFriendIdAndRequestStatus(friendId, userId, RequestStatus.ACCEPTED);
-        if (alreadyFriend){
+                || friendRepository.existsByUserIdAndFriendIdAndRequestStatus(friendId, userId, RequestStatus.ACCEPTED);
+        if (alreadyFriend) {
             return "이미 친구입니다.";
         }
 
         Optional<Friend> reversePendingRequest = friendRepository.findByUserIdAndFriendIdAndRequestStatus(friendId, userId, RequestStatus.PENDING);
-        if (reversePendingRequest.isPresent()){
+        if (reversePendingRequest.isPresent()) {
             Friend reverseRequest = reversePendingRequest.get();
             reverseRequest.setRequestStatus(RequestStatus.ACCEPTED);
             reverseRequest.setFriendSince(Timestamp.from(Instant.now()));
@@ -47,7 +54,7 @@ public class FriendService {
         }
 
         Optional<Friend> rejected = friendRepository.findByUserIdAndFriendIdAndRequestStatus(userId, friendId, RequestStatus.REJECTED);
-        if (rejected.isPresent()){
+        if (rejected.isPresent()) {
             Friend request = rejected.get();
             request.setRequestStatus(RequestStatus.PENDING);
             request.setFriendSince(Timestamp.from(Instant.now()));
@@ -56,13 +63,13 @@ public class FriendService {
         }
 
         boolean alreadyRequested = friendRepository.existsByUserIdAndFriendIdAndRequestStatus(userId, friendId, RequestStatus.PENDING);
-        if (alreadyRequested){
+        if (alreadyRequested) {
             return "이미 친구 요청을 보냈습니다.";
         }
 
         Friend friendRequest = new Friend();
-        friendRequest.setUserId(dto.getUserId());
-        friendRequest.setFriendId(dto.getFriendId());
+        friendRequest.setUserId(userId);
+        friendRequest.setFriendId(friendId);
         friendRequest.setRequestStatus(RequestStatus.PENDING);
         friendRequest.setFriendSince(Timestamp.from(Instant.now()));
         friendRepository.save(friendRequest);
@@ -83,21 +90,23 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-    public String respondToFriendRequest(FriendRequest.ResponseRequest dto){
-        Optional<Friend> optionalRequest = friendRepository.findByUserIdAndFriendIdAndRequestStatus(dto.getFriendId(), dto.getUserId(), RequestStatus.PENDING);
+    public String respondToFriendRequest(Long userId, FriendRequest.ResponseRequest dto){
+        Long friendId = dto.getFriendId();
+        String status = dto.getStatus();
 
-        if(optionalRequest.isEmpty()){
+        Optional<Friend> optionalRequest = friendRepository.findByUserIdAndFriendIdAndRequestStatus(friendId, userId, RequestStatus.PENDING);
+        if (optionalRequest.isEmpty()) {
             return "친구 요청이 존재하지 않습니다.";
         }
 
         Friend friendRequest = optionalRequest.get();
 
-        if("ACCEPTED".equalsIgnoreCase(dto.getStatus())){
+        if ("ACCEPTED".equalsIgnoreCase(status)) {
             friendRequest.setRequestStatus(RequestStatus.ACCEPTED);
             friendRequest.setFriendSince(Timestamp.from(Instant.now()));
             friendRepository.save(friendRequest);
             return "친구 요청을 수락했습니다.";
-        } else if ("REJECTED".equalsIgnoreCase(dto.getStatus())){
+        } else if ("REJECTED".equalsIgnoreCase(status)) {
             friendRequest.setRequestStatus(RequestStatus.REJECTED);
             friendRepository.save(friendRequest);
             return "친구 요청을 거절했습니다.";

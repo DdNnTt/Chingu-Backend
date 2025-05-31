@@ -1,7 +1,9 @@
 package com.chingubackend.config;
 
 import com.chingubackend.jwt.JwtAuthenticationFilter;
+import com.chingubackend.security.CustomAccessDeniedHandler;
 import com.chingubackend.security.CustomUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,10 +22,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          CustomUserDetailsService userDetailsService,
+                          CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     @Bean
@@ -50,11 +56,29 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions().disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/signup","/api/users/signup", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**","/api/auth/email/verify", "/api/auth/email/confirm","/api/users/delete/**","/api/auth/email/password/verify","/api/auth/email/password/reset").permitAll() // 인증 없이 접근 허용
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/signup",
+                                "/api/users/signup",
+                                "/api/users/check-userId",
+                                "/api/users/check-nickname",
+                                "/api/users/find-userId",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/h2-console/**",
+                                "/api/auth/email/verify",
+                                "/api/auth/email/confirm",
+                                "/api/users/delete/**",
+                                "/api/auth/email/password/verify",
+                                "/api/auth/email/password/reset"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider()) // 사용자 인증 제공자 설정
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
+                .exceptionHandling(e -> e
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
                 .httpBasic();
 
         return http.build();
