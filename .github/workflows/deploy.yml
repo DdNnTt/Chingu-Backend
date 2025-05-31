@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           source: "build/libs/Chingu-Backend-0.0.1-SNAPSHOT.jar"
-          target: "/home/ec2-user"
+          target: "/home/ec2-user/Chingu-Backend-0.0.1-SNAPSHOT.jar"
           overwrite: true
 
       - name: Copy start.sh script to EC2
