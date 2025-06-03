@@ -20,10 +20,11 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Long id, String username) {
+    public String generateToken(Long id, String username, String nickname) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("id", id)
+                .claim("nickname", nickname)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -62,6 +63,30 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody()
                     .getSubject();
+        } catch (ExpiredJwtException e) {
+            System.out.println("Token expired: " + e.getMessage());
+            return null;
+        } catch (JwtException e) {
+            System.out.println("Invalid token: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public String extractNickname(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Object nicknameObj = claims.get("nickname");
+            if (nicknameObj == null) {
+                System.out.println("Token does not contain a 'nickname' claim.");
+                return null;
+            }
+
+            return nicknameObj.toString();
         } catch (ExpiredJwtException e) {
             System.out.println("Token expired: " + e.getMessage());
             return null;

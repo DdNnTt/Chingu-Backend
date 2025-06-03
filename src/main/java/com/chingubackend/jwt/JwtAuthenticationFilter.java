@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
         String username = jwtUtil.extractUsername(token);
         Long userId = jwtUtil.extractUserId(token);
+        String nickname = jwtUtil.extractNickname(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtUtil.validateToken(token)) {
@@ -53,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 request.setAttribute("userId", userId);
+                request.setAttribute("nickName", nickname);
             }
         }
         chain.doFilter(request, response);

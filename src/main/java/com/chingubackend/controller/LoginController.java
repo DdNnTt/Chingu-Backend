@@ -47,7 +47,7 @@ public class LoginController {
         User user = userRepository.findByUserId(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        String token = jwtUtil.generateToken(user.getId(), user.getUserId());
+        String token = jwtUtil.generateToken(user.getId(), user.getUserId(), user.getNickname());
 
         return ResponseEntity.ok(new LoginResponse(token, "Bearer", user.getNickname(), user.getEmail()));
     }
