@@ -22,16 +22,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
+      - name: Get built JAR name
+        id: get-jar
+        run: |
+          JAR_NAME=$(ls build/libs/*.jar | head -n 1)
+          echo "JAR_NAME=${JAR_NAME}" >> $GITHUB_ENV
+
       - name: Check if JAR file exists
         run: ls -al build/libs
-
-      - name: Delete old JAR on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_KEY }}
-          script: rm -f /home/ec2-user/Chingu-Backend-0.0.1-SNAPSHOT.jar
 
       - name: Copy JAR file to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -39,8 +37,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
-          source: "build/libs/Chingu-Backend-0.0.1-SNAPSHOT.jar"
-          target: "/home/ec2-user/Chingu-Backend-0.0.1-SNAPSHOT.jar"
+          source: "${{ env.JAR_NAME }}"
+          target: "~/app/Chingu-Backend-0.0.1-SNAPSHOT.jar"
           overwrite: true
 
       - name: Copy start.sh script to EC2
@@ -50,7 +48,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           source: "start.sh"
-          target: "/home/ec2-user"
+          target: "~/app"
           overwrite: true
 
       - name: Run start.sh on EC2
@@ -60,5 +58,6 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            chmod +x ~/start.sh
-            nohup ~/start.sh > ~/startup.log 2>&1 &
+            cd ~/app
+            chmod +x start.sh
+            nohup ./start.sh > app.log 2>&1 &
