@@ -49,6 +49,6 @@ public class LoginController {
 
         String token = jwtUtil.generateToken(user.getId(), user.getUserId());
 
-        return ResponseEntity.ok(new LoginResponse(token, "Bearer"));
+        return ResponseEntity.ok(new LoginResponse(token, "Bearer", user.getNickname(), user.getEmail()));
     }
 }
