@@ -22,12 +22,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      - name: Get built JAR name
-        id: get-jar
-        run: |
-          JAR_NAME=$(ls build/libs/*.jar | head -n 1)
-          echo "JAR_NAME=${JAR_NAME}" >> $GITHUB_ENV
-
       - name: Check if JAR file exists
         run: ls -al build/libs
 
@@ -37,8 +31,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
-          source: "${{ env.JAR_NAME }}"
-          target: "~/app/Chingu-Backend-0.0.1-SNAPSHOT.jar"
+          source: "build/libs/Chingu-Backend-0.0.1-SNAPSHOT.jar"
+          target: "~"
           overwrite: true
 
       - name: Copy start.sh script to EC2
@@ -48,7 +42,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           source: "start.sh"
-          target: "~/app"
+          target: "~"
           overwrite: true
 
       - name: Run start.sh on EC2
@@ -58,6 +52,5 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd ~/app
-            chmod +x start.sh
-            nohup ./start.sh > app.log 2>&1 &
+            chmod +x ~/start.sh
+            nohup ~/start.sh > ~/startup.log 2>&1 &
