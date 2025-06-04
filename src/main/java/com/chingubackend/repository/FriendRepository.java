@@ -1,6 +1,7 @@
 package com.chingubackend.repository;
 
 import com.chingubackend.entity.Friend;
+import com.chingubackend.entity.User;
 import com.chingubackend.model.RequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,5 +24,8 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     @Query("SELECT f FROM Friend f WHERE ((f.userId = :userId AND f.friendId = :friendId) OR (f.userId = :friendId AND f.friendId = :userId)) AND f.requestStatus = 'ACCEPTED'")
     Optional<Friend> findAcceptedFriend(@Param("userId") Long userId, @Param("friendId") Long friendId);
+    
+    @Query("SELECT COUNT(f) > 0 FROM Friend f WHERE f.userId = :userId AND f.friendId = :friendId")
+    boolean existsFriendship(@Param("userId") Long userId, @Param("friendId") Long friendId);
 
 }

@@ -70,7 +70,8 @@ public class SecurityConfig {
                                 "/api/auth/email/confirm",
                                 "/api/users/delete/**",
                                 "/api/auth/email/password/verify",
-                                "/api/auth/email/password/reset"
+                                "/api/auth/email/password/reset",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
