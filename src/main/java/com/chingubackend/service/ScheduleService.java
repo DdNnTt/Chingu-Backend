@@ -3,6 +3,9 @@ package com.chingubackend.service;
 import com.chingubackend.dto.request.ScheduleRequest;
 import com.chingubackend.entity.Schedule;
 import com.chingubackend.entity.User;
+import com.chingubackend.exception.ForbiddenException;
+import com.chingubackend.exception.NotFoundException;
+import com.chingubackend.exception.SuccessResponse;
 import com.chingubackend.repository.ScheduleRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -19,9 +22,9 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
 
-    public Schedule addSchedule(Long userId, ScheduleRequest scheduleRequest) {
+    public SuccessResponse addSchedule(Long userId, ScheduleRequest scheduleRequest) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다. 확인 부탁드립니다. : " + userId));
+                .orElseThrow(() -> new NotFoundException("사용자가 존재하지 않습니다."));
 
         Schedule schedule = Schedule.builder()
                 .user(user)
@@ -30,21 +33,22 @@ public class ScheduleService {
                 .scheduleDate(scheduleRequest.getScheduleDate())
                 .build();
 
-        return scheduleRepository.save(schedule);
+        scheduleRepository.save(schedule);
+        return SuccessResponse.of("일정이 성공적으로 등록되었습니다.");
     }
 
     public List<Schedule> getSchedulesByUserId(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다. 확인 부탁드리겠습니다. : " + userId));
+                .orElseThrow(() -> new NotFoundException("사용자가 존재하지 않습니다."));
         return scheduleRepository.findByUser(user);
     }
 
-    public Schedule updateSchedule(Long userId, Long scheduleId, ScheduleRequest request) {
+    public SuccessResponse updateSchedule(Long userId, Long scheduleId, ScheduleRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스케줄 ID가 존재하지 않습니다. 확인 부탁드리겠습니다 : " + scheduleId));
+                .orElseThrow(() -> new NotFoundException("해당 스케줄을 찾을 수 없습니다."));
 
         if (!schedule.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("해당 스케줄에 대한 수정 권한이 없습니다.");
+            throw new ForbiddenException("해당 스케줄에 대한 수정 권한이 없습니다.");
         }
 
         if (request.getTitle() != null) {
@@ -57,17 +61,19 @@ public class ScheduleService {
             schedule.setScheduleDate(request.getScheduleDate());
         }
 
-        return scheduleRepository.save(schedule);
+        scheduleRepository.save(schedule);
+        return SuccessResponse.of("일정이 성공적으로 수정되었습니다.");
     }
 
-    public void deleteSchedule(Long userId, Long scheduleId) {
+    public SuccessResponse deleteSchedule(Long userId, Long scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스케줄 ID가 존재하지 않습니다. 확인 부탁드리겠습니다 : " + scheduleId));
+                .orElseThrow(() -> new NotFoundException("해당 스케줄을 찾을 수 없습니다."));
 
         if (!schedule.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("해당 스케줄에 대한 삭제 권한이 없습니다.");
+            throw new ForbiddenException("해당 스케줄에 대한 삭제 권한이 없습니다.");
         }
 
         scheduleRepository.delete(schedule);
+        return SuccessResponse.of("일정이 성공적으로 삭제되었습니다.");
     }
 }
