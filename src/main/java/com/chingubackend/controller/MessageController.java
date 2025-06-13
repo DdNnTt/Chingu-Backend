@@ -3,6 +3,7 @@ package com.chingubackend.controller;
 import com.chingubackend.dto.request.MessageRequest;
 import com.chingubackend.dto.response.MessageReadResponse;
 import com.chingubackend.dto.response.MessageResponse;
+import com.chingubackend.exception.SuccessResponse;
 import com.chingubackend.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -74,11 +75,11 @@ public class MessageController {
 
     @Operation(summary = "쪽지 삭제", description = "쪽지를 삭제합니다. 보낸 사람 또는 받은 사람만 삭제할 수 있습니다.")
     @DeleteMapping("/{messageId}")
-    public ResponseEntity<MessageResponse> deleteMessage(
+    public ResponseEntity<SuccessResponse> deleteMessage(
             @Parameter(description = "삭제할 쪽지 ID", example = "1") @PathVariable Long messageId,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        MessageResponse response = messageService.deleteMessage(messageId, userDetails);
+        SuccessResponse response = messageService.deleteMessage(messageId, userDetails);
         return ResponseEntity.ok(response);
     }
 }

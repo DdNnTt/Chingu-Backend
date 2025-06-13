@@ -6,6 +6,9 @@ import com.chingubackend.dto.response.MessageReadResponse;
 import com.chingubackend.dto.response.MessageResponse;
 import com.chingubackend.entity.Message;
 import com.chingubackend.entity.User;
+import com.chingubackend.exception.ForbiddenException;
+import com.chingubackend.exception.NotFoundException;
+import com.chingubackend.exception.SuccessResponse;
 import com.chingubackend.repository.FriendRepository;
 import com.chingubackend.repository.MessageRepository;
 import com.chingubackend.repository.UserRepository;
@@ -34,16 +37,16 @@ public class MessageService {
         log.info("JWT 인증이 완료되었습니다. sender = {}", senderUserId);
 
         User sender = userRepository.findByUserId(senderUserId)
-                .orElseThrow(() -> new IllegalArgumentException("보내는 분이 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("보내는 사용자를 찾을 수 없습니다."));
 
         User receiver = userRepository.findByNickname(messageRequest.getReceiver())
-                .orElseThrow(() -> new IllegalArgumentException("받는 분이 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("수신자를 찾을 수 없습니다."));
 
         boolean isFriend = friendRepository.existsFriendship(sender.getId(), receiver.getId())
                 || friendRepository.existsFriendship(receiver.getId(), sender.getId());
 
         if (!isFriend) {
-            throw new IllegalStateException("쪽지는 친구에게만 보낼 수 있습니다.");
+            throw new ForbiddenException("쪽지는 친구에게만 보낼 수 있습니다.");
         }
 
         Message messageEntity = messageRequest.toEntity(sender, receiver);
@@ -60,13 +63,13 @@ public class MessageService {
         return MessageResponse.fromEntity(messageEntity);
     }
 
-    public List<MessageResponse> readAllMessages(String senderUserId, UserDetails userDetails) {
-        if (!userDetails.getUsername().equals(senderUserId)) {
-            throw new AccessDeniedException("인증된 사용자가 아닙니다.");
+    public List<MessageResponse> readAllMessages(String receiverUserId, UserDetails userDetails) {
+        if (!userDetails.getUsername().equals(receiverUserId)) {
+            throw new ForbiddenException("쪽지를 조회할 권한이 없습니다.");
         }
 
-        User receiver = userRepository.findByUserId(senderUserId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+        User receiver = userRepository.findByUserId(receiverUserId)
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
         return messageRepository.findAllByReceiverOrderBySendTimeDesc(receiver)
                 .stream()
@@ -76,10 +79,10 @@ public class MessageService {
 
     public MessageResponse getMessage(Long messageId, UserDetails userDetails) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("쪽지를 찾을 수 없습니다."));
 
         if (!message.getReceiver().getUserId().equals(userDetails.getUsername())) {
-            throw new AccessDeniedException("조회 권한이 없습니다.");
+            throw new ForbiddenException("해당 쪽지에 대한 접근 권한이 없습니다.");
         }
 
         return MessageResponse.fromEntity(message);
@@ -87,10 +90,10 @@ public class MessageService {
 
     public MessageReadResponse markAsRead(Long messageId, UserDetails userDetails) throws Exception {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("쪽지를 찾을 수 없습니다."));
 
         if (!message.getReceiver().getUserId().equals(userDetails.getUsername())) {
-            throw new AccessDeniedException("읽을 권한이 없습니다.");
+            throw new ForbiddenException("해당 쪽지를 읽을 권한이 없습니다.");
         }
 
         boolean wasAlreadyRead = message.isReadStatus();
@@ -100,10 +103,14 @@ public class MessageService {
             messageRepository.save(message);
 
             long unreadCount = messageRepository.countByReceiverIdAndReadStatus(message.getReceiver().getId(), false);
-            webSocketMessageHandler.sendNotification(
-                    message.getReceiver().getUserId(),
-                    "읽지 않은 쪽지 수: " + unreadCount
-            );
+            try {
+                webSocketMessageHandler.sendNotification(
+                        message.getReceiver().getUserId(),
+                        "읽지 않은 쪽지 수: " + unreadCount
+                );
+            } catch (Exception e) {
+                log.warn("웹소켓 알림 실패: {}", e.getMessage());
+            }
         }
 
         return new MessageReadResponse(messageId, true);
@@ -111,7 +118,7 @@ public class MessageService {
 
     public List<MessageResponse> readAllSentMessages(UserDetails userDetails) {
         User sender = userRepository.findByUserId(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
         return messageRepository.findAllBySenderOrderBySendTimeDesc(sender)
                 .stream()
@@ -119,9 +126,9 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
 
-    public MessageResponse deleteMessage(Long messageId, UserDetails userDetails) {
+    public SuccessResponse deleteMessage(Long messageId, UserDetails userDetails) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("쪽지가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundException("쪽지를 찾을 수 없습니다."));
 
         // 삭제 권한 확인
         String requesterId = userDetails.getUsername();
@@ -129,7 +136,7 @@ public class MessageService {
         boolean isReceiver = message.getReceiver().getUserId().equals(requesterId);
 
         if (!isSender && !isReceiver) {
-            throw new AccessDeniedException("삭제 권한이 없습니다.");
+            throw new ForbiddenException("해당 쪽지를 삭제할 권한이 없습니다.");
         }
 
         if (isSender){
@@ -147,7 +154,7 @@ public class MessageService {
 //        }
         messageRepository.save(message);
 
-        return MessageResponse.fromEntity(message);
+        return SuccessResponse.of("쪽지가 삭제 처리되었습니다.");
     }
 
 }
