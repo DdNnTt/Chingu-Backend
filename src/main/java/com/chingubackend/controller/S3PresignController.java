@@ -2,6 +2,8 @@ package com.chingubackend.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.chingubackend.exception.ImageUploadException;
+import io.swagger.v3.oas.annotations.Operation;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
@@ -28,6 +30,7 @@ public class S3PresignController {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Operation(summary = "S3 이미지 업로드용 presigned URL 생성", description = "fileName을 전달하면 S3에 직접 업로드 가능한 URL을 발급합니다.")
     @GetMapping("/presign")
     public ResponseEntity<?> getPresignedUrl(@RequestParam String fileName) {
         try {
@@ -46,7 +49,7 @@ public class S3PresignController {
                     "fileUrl", amazonS3.getUrl(bucket, key).toString()
             ));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("presigned URL 생성 실패");
+            throw new ImageUploadException("presigned URL 생성에 실패했습니다.");
         }
     }
 }
