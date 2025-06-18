@@ -5,6 +5,7 @@ import com.chingubackend.dto.response.LoginResponse;
 import com.chingubackend.entity.User;
 import com.chingubackend.jwt.JwtUtil;
 import com.chingubackend.repository.UserRepository;
+import com.chingubackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,11 +24,13 @@ public class LoginController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public LoginController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserRepository userRepository) {
+    public LoginController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserRepository userRepository, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @Operation(summary = "로그인", description = "사용자 ID와 비밀번호를 입력하면 JWT 토큰을 발급합니다.")
@@ -46,6 +49,8 @@ public class LoginController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = userRepository.findByUserId(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        userService.updateLastLoginDate(user.getUserId());
 
         String token = jwtUtil.generateToken(user.getId(), user.getUserId(), user.getNickname());
 
