@@ -12,6 +12,7 @@ import com.chingubackend.exception.UserNotFoundException;
 import com.chingubackend.model.SocialType;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -126,6 +127,14 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         }
 
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastLoginDate(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+        user.setLastLoginDate(LocalDateTime.now());
         userRepository.save(user);
     }
 
