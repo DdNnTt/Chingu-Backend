@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "[INFO] 환경변수 로드 중..."
+source ~/.bash_profile
+
 echo "[INFO] 기존 실행 중인 애플리케이션 종료 시도..."
 pkill -f 'java -jar' || echo "[INFO] 종료할 프로세스가 없습니다."
 
