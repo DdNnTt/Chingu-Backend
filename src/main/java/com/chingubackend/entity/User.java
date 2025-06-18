@@ -53,8 +53,6 @@ public class User {
 
     private LocalDateTime lastLoginDate;
 
-    private String uniqueKey;
-
     @Enumerated(EnumType.STRING)
     private SocialType socialType = SocialType.NONE;
 
