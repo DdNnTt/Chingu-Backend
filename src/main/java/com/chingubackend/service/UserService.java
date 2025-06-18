@@ -37,13 +37,17 @@ public class UserService {
             throw new EmailNotVerifiedException();
         }
 
+        String profilePictureUrl = request.getProfilePictureUrl() != null
+                ? request.getProfilePictureUrl()
+                : "https://chingu-album.s3.ap-northeast-2.amazonaws.com/album/default-profile.png";
+
         User user = User.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
                 .nickname(request.getNickname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .profilePictureUrl(request.getProfilePictureUrl())
+                .profilePictureUrl(profilePictureUrl)
                 .bio(request.getBio())
                 .socialType(SocialType.NONE)
                 .build();
