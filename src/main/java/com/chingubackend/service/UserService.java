@@ -10,6 +10,10 @@ import com.chingubackend.exception.EmailNotVerifiedException;
 import com.chingubackend.exception.PasswordMismatchException;
 import com.chingubackend.exception.UserNotFoundException;
 import com.chingubackend.model.SocialType;
+import com.chingubackend.repository.GroupInviteRepository;
+import com.chingubackend.repository.GroupMemberRepository;
+import com.chingubackend.repository.GroupScheduleRepository;
+import com.chingubackend.repository.MessageRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -27,6 +31,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+    private final GroupMemberRepository groupMemberRepository;
+    private final GroupInviteRepository groupInviteRepository;
+    private final GroupScheduleRepository groupScheduleRepository;
+    private final MessageRepository messageRepository;
 
     @Transactional
     public void registerUser(UserRequest request) {
@@ -86,6 +94,11 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
         }
+
+        messageRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
+        groupInviteRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
+        groupMemberRepository.deleteByUserId(user.getId());
+        groupScheduleRepository.deleteByUser(user);
 
         userRepository.delete(user);
     }
