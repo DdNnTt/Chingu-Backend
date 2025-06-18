@@ -10,8 +10,13 @@ import com.chingubackend.exception.EmailNotVerifiedException;
 import com.chingubackend.exception.PasswordMismatchException;
 import com.chingubackend.exception.UserNotFoundException;
 import com.chingubackend.model.SocialType;
+import com.chingubackend.repository.GroupInviteRepository;
+import com.chingubackend.repository.GroupMemberRepository;
+import com.chingubackend.repository.GroupScheduleRepository;
+import com.chingubackend.repository.MessageRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+    private final GroupMemberRepository groupMemberRepository;
+    private final GroupInviteRepository groupInviteRepository;
+    private final GroupScheduleRepository groupScheduleRepository;
+    private final MessageRepository messageRepository;
 
     @Transactional
     public void registerUser(UserRequest request) {
@@ -36,13 +45,17 @@ public class UserService {
             throw new EmailNotVerifiedException();
         }
 
+        String profilePictureUrl = request.getProfilePictureUrl() != null
+                ? request.getProfilePictureUrl()
+                : "https://chingu-album.s3.ap-northeast-2.amazonaws.com/album/default-profile.png";
+
         User user = User.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
                 .nickname(request.getNickname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .profilePictureUrl(request.getProfilePictureUrl())
+                .profilePictureUrl(profilePictureUrl)
                 .bio(request.getBio())
                 .socialType(SocialType.NONE)
                 .build();
@@ -81,6 +94,11 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
         }
+
+        messageRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
+        groupInviteRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
+        groupMemberRepository.deleteByUserId(user.getId());
+        groupScheduleRepository.deleteByUser(user);
 
         userRepository.delete(user);
     }
@@ -126,6 +144,14 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         }
 
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateLastLoginDate(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+        user.setLastLoginDate(LocalDateTime.now());
         userRepository.save(user);
     }
 

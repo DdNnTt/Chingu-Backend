@@ -11,4 +11,5 @@ public interface MessageRepository extends JpaRepository<Message,Long> {
     Long countByReceiverIdAndReadStatus(Long receiverId, boolean readStatus);
     List<Message> findAllByReceiverOrderBySendTimeDesc(User receiver);
     List<Message> findAllBySenderOrderBySendTimeDesc(User sender);
+    void deleteBySenderIdOrReceiverId(Long senderId, Long receiverId);
 }
