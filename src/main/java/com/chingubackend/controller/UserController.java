@@ -5,13 +5,16 @@ import com.chingubackend.dto.request.UserRequest;
 import com.chingubackend.dto.request.UserUpdateRequest;
 import com.chingubackend.dto.response.UserResponse;
 import com.chingubackend.entity.User;
+import com.chingubackend.service.S3Service;
 import com.chingubackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,9 +22,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final S3Service s3Service;
 
     @PostMapping("/signup")
     @Operation(summary = "회원가입", description = "사용자가 회원가입을 할 수 있습니다. 아이디, 닉네임, 이메일, 비밀번호를 입력해야 합니다.")
@@ -110,7 +114,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/mypage/edit")
+    @PatchMapping("/mypage/edit")
     @Operation(summary = "마이페이지 수정", description = "로그인한 사용자가 닉네임, 프로필 사진, 자기소개, 비밀번호를 수정합니다.")
     public ResponseEntity<String> updateMyPage(@RequestBody UserUpdateRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -118,5 +122,25 @@ public class UserController {
 
         userService.updateMyPage(userId, request);
         return ResponseEntity.ok("마이페이지가 성공적으로 수정되었습니다.");
+    }
+
+    @PostMapping("/upload-url/profile")
+    @Operation(summary = "프로필 사진 업로드용 S3 URL 발급", description = "JPG, PNG 확장자를 지원하며 기본값은 JPG입니다.")
+    public ResponseEntity<Map<String, String>> getProfileUploadUrl(
+            @RequestParam(defaultValue = "jpg") String extension
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        String ext = extension.startsWith(".") ? extension : "." + extension; // ".png" 형식 보장
+        String key = "profile/" + userId + "-" + UUID.randomUUID() + ext;
+
+        URL uploadUrl = s3Service.generatePreSignedUrl(key);
+        String fileUrl = s3Service.getFileUrl(key);
+
+        return ResponseEntity.ok(Map.of(
+                "uploadUrl", uploadUrl.toString(),
+                "fileUrl", fileUrl
+        ));
     }
 }
