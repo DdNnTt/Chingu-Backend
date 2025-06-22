@@ -27,7 +27,7 @@ public class Group {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "creator_id", nullable = false)
+    @JoinColumn(name = "creator_id", nullable = true)
     private User creator;
 
     @PrePersist

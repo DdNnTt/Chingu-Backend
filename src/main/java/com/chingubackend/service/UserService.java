@@ -12,6 +12,7 @@ import com.chingubackend.exception.UserNotFoundException;
 import com.chingubackend.model.SocialType;
 import com.chingubackend.repository.GroupInviteRepository;
 import com.chingubackend.repository.GroupMemberRepository;
+import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.GroupScheduleRepository;
 import com.chingubackend.repository.MessageRepository;
 import com.chingubackend.repository.UserRepository;
@@ -34,6 +35,7 @@ public class UserService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupInviteRepository groupInviteRepository;
     private final GroupScheduleRepository groupScheduleRepository;
+    private final GroupRepository groupRepository;
     private final MessageRepository messageRepository;
 
     @Transactional
@@ -94,6 +96,12 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
         }
+
+        User deletedUser = userRepository.findByUserId("deleted-user")
+                .orElseThrow(() -> new IllegalStateException("시스템 사용자(deleted-user)가 존재하지 않습니다."));
+
+        // 탈퇴 사용자가 생성한 그룹의 소유자를 시스템 사용자로 이전
+        groupRepository.updateCreatorId(user.getId(), deletedUser.getId());
 
         messageRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
         groupInviteRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
