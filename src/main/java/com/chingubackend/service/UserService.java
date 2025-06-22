@@ -15,6 +15,7 @@ import com.chingubackend.repository.GroupMemberRepository;
 import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.GroupScheduleRepository;
 import com.chingubackend.repository.MessageRepository;
+import com.chingubackend.repository.ScheduleRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ public class UserService {
     private final GroupScheduleRepository groupScheduleRepository;
     private final GroupRepository groupRepository;
     private final MessageRepository messageRepository;
+    private final ScheduleRepository scheduleRepository;
 
     @Transactional
     public void registerUser(UserRequest request) {
@@ -105,6 +107,7 @@ public class UserService {
 
         messageRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
         groupInviteRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
+        scheduleRepository.deleteByUser(user);
         groupMemberRepository.deleteByUserId(user.getId());
         groupScheduleRepository.deleteByUser(user);
 
