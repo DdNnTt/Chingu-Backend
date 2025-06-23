@@ -1,8 +1,11 @@
 package com.chingubackend.controller.admin;
 
+import com.chingubackend.dto.admin.response.AdminUserDeleteResponse;
 import com.chingubackend.dto.admin.response.AdminUserResponse;
 import com.chingubackend.entity.User;
+import com.chingubackend.exception.UserNotFoundException;
 import com.chingubackend.repository.UserRepository;
+import com.chingubackend.service.admin.AdminUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +31,7 @@ import com.chingubackend.security.CustomUserDetails;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final AdminUserService adminUserService;
 
     @Operation(summary = "관리자 권한 확인", description = "로그인한 사용자가 ROLE_ADMIN 권한을 가졌는지 확인")
     @GetMapping("/check")
@@ -73,5 +79,21 @@ public class AdminController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/users/{userId}")
+    @Operation(summary = "회원 삭제", description = "관리자가 특정 사용자를 삭제합니다.")
+    public ResponseEntity<AdminUserDeleteResponse> deleteUserByAdmin(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long userId) {
+
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            throw new AccessDeniedException("관리자 권한이 필요합니다.");
+        }
+
+        adminUserService.deleteUserByAdmin(userId);
+
+        return ResponseEntity.ok(new AdminUserDeleteResponse(userId, "회원 삭제 성공"));
+    }
+
 
 }
