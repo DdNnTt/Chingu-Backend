@@ -1,5 +1,6 @@
 package com.chingubackend.entity;
 
+import com.chingubackend.model.Role;
 import com.chingubackend.model.SocialType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -72,8 +73,20 @@ public class User {
         this.password = passwordEncoder.encode(this.password);
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
     @Builder
-    public User(String userId, String name, String nickname, String email, String password, String profilePictureUrl, String bio, SocialType socialType) {
+    public User(String userId,
+                String name,
+                String nickname,
+                String email,
+                String password,
+                String profilePictureUrl,
+                String bio,
+                SocialType socialType,
+                Role role) {
         this.userId = userId;
         this.name = name;
         this.nickname = nickname;
@@ -82,5 +95,6 @@ public class User {
         this.profilePictureUrl = profilePictureUrl;
         this.bio = bio;
         this.socialType = socialType;
+        this.role = role;
     }
 }
