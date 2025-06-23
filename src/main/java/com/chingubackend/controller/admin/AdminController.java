@@ -1,8 +1,10 @@
 package com.chingubackend.controller.admin;
 
 import com.chingubackend.dto.admin.response.AdminUserResponse;
+import com.chingubackend.entity.User;
 import com.chingubackend.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.chingubackend.security.CustomUserDetails;
@@ -46,4 +49,29 @@ public class AdminController {
 
         return ResponseEntity.ok(users);
     }
+
+    @Operation(summary = "회원 검색", description = "이름, 닉네임, 사용자 ID를 기준으로 회원을 검색합니다. 관리자 권한 필요.")
+    @GetMapping("/users/search")
+    public ResponseEntity<List<AdminUserResponse>> searchUsersByAdmin(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(description = "검색 키워드 (이름/닉네임/ID)")
+            @RequestParam String keyword) {
+
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            throw new AccessDeniedException("관리자 권한이 필요합니다.");
+        }
+
+        List<User> users = userRepository.searchByKeyword(keyword);
+
+        if (users.isEmpty()) {
+            return ResponseEntity.status(404).build();
+        }
+
+        List<AdminUserResponse> response = users.stream()
+                .map(AdminUserResponse::new)
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
 }
