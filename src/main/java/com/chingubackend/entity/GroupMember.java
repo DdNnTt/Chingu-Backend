@@ -1,5 +1,6 @@
 package com.chingubackend.entity;
 
+import com.chingubackend.model.MemberStatus;
 import com.chingubackend.model.RequestStatus;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -28,7 +29,7 @@ public class GroupMember {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RequestStatus status;
+    private MemberStatus status;
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
@@ -39,7 +40,7 @@ public class GroupMember {
     }
 
     @Builder
-    public GroupMember(Group group, User user, RequestStatus status) {
+    public GroupMember(Group group, User user, MemberStatus status) {
         this.group = group;
         this.user = user;
         this.status = status;
