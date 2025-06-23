@@ -1,6 +1,7 @@
 package com.chingubackend.service;
 
 import com.chingubackend.dto.request.GroupMemoryRequest;
+import com.chingubackend.dto.request.GroupMemoryUpdateRequest;
 import com.chingubackend.dto.response.GroupMemoryResponse;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupMemory;
@@ -11,6 +12,7 @@ import com.chingubackend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -58,4 +60,31 @@ public class GroupMemoryService {
                 .createdAt(saved.getCreatedDate())
                 .build();
     }
+
+    @Transactional
+    public GroupMemoryResponse updateGroupMemory(Long groupId, Long memoryId, Long userId, GroupMemoryUpdateRequest request) {
+        GroupMemory memory = groupMemoryRepository.findById(memoryId)
+                .orElseThrow(() -> new EntityNotFoundException("앨범 글을 찾을 수 없습니다."));
+
+        if (!memory.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("작성자만 수정할 수 있습니다.");
+        }
+
+        memory.update(request);
+
+        return GroupMemoryResponse.builder()
+                .memoryId(memory.getId())
+                .groupId(groupId)
+                .nickname(memory.getUser().getNickname())
+                .title(memory.getTitle())
+                .content(memory.getContent())
+                .imageUrl1(memory.getImageUrl1())
+                .imageUrl2(memory.getImageUrl2())
+                .imageUrl3(memory.getImageUrl3())
+                .location(memory.getLocation())
+                .memoryDate(memory.getMemoryDate())
+                .createdAt(memory.getCreatedDate())
+                .build();
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.chingubackend.entity;
 
+import com.chingubackend.dto.request.GroupMemoryUpdateRequest;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.User;
 import jakarta.persistence.Column;
@@ -76,4 +77,16 @@ public class GroupMemory {
         this.createdDate = LocalDateTime.now();
         this.modifyDate = LocalDateTime.now();
     }
+
+    public void update(GroupMemoryUpdateRequest dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.imageUrl1 = dto.getImageUrl1();
+        this.imageUrl2 = dto.getImageUrl2();
+        this.imageUrl3 = dto.getImageUrl3();
+        this.location = dto.getLocation();
+        this.memoryDate = dto.getMemoryDate();
+        this.modifyDate = LocalDateTime.now();
+    }
+
 }
