@@ -2,6 +2,7 @@ package com.chingubackend.controller;
 
 import com.chingubackend.dto.request.GroupMemoryRequest;
 import com.chingubackend.dto.request.GroupMemoryUpdateRequest;
+import com.chingubackend.dto.response.GroupMemoryListResponse;
 import com.chingubackend.dto.response.GroupMemoryResponse;
 import com.chingubackend.service.GroupMemoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,11 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -85,4 +88,14 @@ public class GroupMemoryController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "그룹 추억 앨범 글 리스트 조회")
+    @GetMapping
+    public ResponseEntity<List<GroupMemoryListResponse>> getMemories(
+            @PathVariable Long groupId,
+            HttpServletRequest httpRequest) {
+
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        List<GroupMemoryListResponse> response = groupMemoryService.getGroupMemories(groupId, userId);
+        return ResponseEntity.ok(response);
+    }
 }

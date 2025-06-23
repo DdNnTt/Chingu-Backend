@@ -2,15 +2,18 @@ package com.chingubackend.service;
 
 import com.chingubackend.dto.request.GroupMemoryRequest;
 import com.chingubackend.dto.request.GroupMemoryUpdateRequest;
+import com.chingubackend.dto.response.GroupMemoryListResponse;
 import com.chingubackend.dto.response.GroupMemoryResponse;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupMemory;
 import com.chingubackend.entity.User;
+import com.chingubackend.repository.GroupMemberRepository;
 import com.chingubackend.repository.GroupMemoryRepository;
 import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ public class GroupMemoryService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final GroupMemoryRepository groupMemoryRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     @Transactional
     public GroupMemoryResponse createGroupMemory(Long groupId, Long userId, GroupMemoryRequest request) {
@@ -104,6 +108,27 @@ public class GroupMemoryService {
         }
 
         groupMemoryRepository.delete(memory);
+    }
+
+    @Transactional
+    public List<GroupMemoryListResponse> getGroupMemories(Long groupId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("그룹이 존재하지 않습니다."));
+
+        boolean isMember = groupMemberRepository.existsByGroupIdAndUserId(groupId, userId);
+        if (!isMember) {
+            throw new AccessDeniedException("해당 그룹에 속한 사용자만 접근할 수 있습니다.");
+        }
+
+        List<GroupMemory> memories = groupMemoryRepository.findByGroupId(groupId);
+        return memories.stream()
+                .map(memory -> GroupMemoryListResponse.builder()
+                        .memoryId(memory.getId())
+                        .imageUrl(memory.getImageUrl1())
+                        .description(memory.getContent())
+                        .createdAt(memory.getCreatedDate())
+                        .build())
+                .toList();
     }
 
 }
