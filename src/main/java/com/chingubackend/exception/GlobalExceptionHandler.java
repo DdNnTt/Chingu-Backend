@@ -1,11 +1,15 @@
 package com.chingubackend.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
 
 import java.time.LocalDateTime;
 
@@ -55,6 +59,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ImageUploadException.class)
     public ResponseEntity<ErrorResponse> handleImageUploadException(ImageUploadException ex) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Image Upload Failed", ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> String.format("[%s] %s", error.getField(), error.getDefaultMessage()))
+                .toList();
+
+        String errorMessage = String.join("; ", errors);
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errorMessage);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String error, String message) {
