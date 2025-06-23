@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,6 +63,25 @@ public class GroupMemoryController {
 
         Long userId = (Long) httpRequest.getAttribute("userId");
         GroupMemoryResponse response = groupMemoryService.updateGroupMemory(groupId, memoryId, userId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{memoryId}")
+    @Operation(summary = "추억 앨범 글 삭제", description = "작성자 본인만 삭제 가능합니다.")
+    public ResponseEntity<Map<String, Object>> deleteMemory(
+            @PathVariable Long groupId,
+            @PathVariable Long memoryId,
+            HttpServletRequest request
+    ) {
+        Long userId = (Long) request.getAttribute("userId");
+        groupMemoryService.deleteGroupMemory(groupId, memoryId, userId);
+
+        Map<String, Object> response = Map.of(
+                "message", "추억 앨범 글이 성공적으로 삭제되었습니다.",
+                "memoryId", memoryId,
+                "groupId", groupId
+        );
+
         return ResponseEntity.ok(response);
     }
 

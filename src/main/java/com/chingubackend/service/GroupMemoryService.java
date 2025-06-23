@@ -87,4 +87,23 @@ public class GroupMemoryService {
                 .build();
     }
 
+    @Transactional
+    public void deleteGroupMemory(Long groupId, Long memoryId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("그룹이 존재하지 않습니다."));
+
+        GroupMemory memory = groupMemoryRepository.findById(memoryId)
+                .orElseThrow(() -> new EntityNotFoundException("앨범 글이 존재하지 않습니다."));
+
+        if (!memory.getGroup().getId().equals(group.getId())) {
+            throw new IllegalArgumentException("그룹 정보가 일치하지 않습니다.");
+        }
+
+        if (!memory.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("삭제 권한이 없습니다.");
+        }
+
+        groupMemoryRepository.delete(memory);
+    }
+
 }
