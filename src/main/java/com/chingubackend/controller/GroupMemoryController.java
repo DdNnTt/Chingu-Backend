@@ -98,4 +98,16 @@ public class GroupMemoryController {
         List<GroupMemoryListResponse> response = groupMemoryService.getGroupMemories(groupId, userId);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "그룹 추억 앨범 글 상세 조회")
+    @GetMapping("/{memoryId}")
+    public ResponseEntity<GroupMemoryResponse> getMemoryDetail(
+            @PathVariable Long groupId,
+            @PathVariable Long memoryId,
+            HttpServletRequest httpRequest) {
+
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        GroupMemoryResponse response = groupMemoryService.getMemoryDetail(groupId, memoryId, userId);
+        return ResponseEntity.ok(response);
+    }
 }

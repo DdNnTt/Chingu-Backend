@@ -16,5 +16,4 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     void deleteByUserId(Long userId);
     boolean existsByGroupIdAndUserId(Long groupId, Long userId);
-
 }

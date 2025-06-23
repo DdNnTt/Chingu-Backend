@@ -136,4 +136,37 @@ public class GroupMemoryService {
                 .toList();
     }
 
+    @Transactional
+    public GroupMemoryResponse getMemoryDetail(Long groupId, Long memoryId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다."));
+
+        // 그룹 멤버 확인
+        boolean isMember = groupMemberRepository.existsByGroupIdAndUserId(groupId, userId);
+        if (!isMember) {
+            throw new AccessDeniedException("해당 그룹에 속한 사용자만 조회할 수 있습니다.");
+        }
+
+        GroupMemory memory = groupMemoryRepository.findById(memoryId)
+                .orElseThrow(() -> new EntityNotFoundException("앨범 글을 찾을 수 없습니다."));
+
+        if (!memory.getGroup().getId().equals(groupId)) {
+            throw new IllegalArgumentException("앨범 글이 해당 그룹에 속해있지 않습니다.");
+        }
+
+        return GroupMemoryResponse.builder()
+                .memoryId(memory.getId())
+                .groupId(groupId)
+                .nickname(memory.getUser().getNickname())
+                .title(memory.getTitle())
+                .content(memory.getContent())
+                .imageUrl1(memory.getImageUrl1())
+                .imageUrl2(memory.getImageUrl2())
+                .imageUrl3(memory.getImageUrl3())
+                .location(memory.getLocation())
+                .memoryDate(memory.getMemoryDate())
+                .createdAt(memory.getCreatedDate())
+                .build();
+    }
+
 }
