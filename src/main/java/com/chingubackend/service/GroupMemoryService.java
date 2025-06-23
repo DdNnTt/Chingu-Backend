@@ -32,6 +32,11 @@ public class GroupMemoryService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("그룹이 존재하지 않습니다."));
 
+        boolean isMember = groupMemberRepository.existsByGroupIdAndUserId(groupId, userId);
+        if (!isMember) {
+            throw new AccessDeniedException("해당 그룹에 속한 사용자만 글을 작성할 수 있습니다.");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseGet(() -> userRepository.findByUserId("system")
                         .orElseThrow(() -> new IllegalStateException("시스템 사용자 정보가 없습니다.")));
