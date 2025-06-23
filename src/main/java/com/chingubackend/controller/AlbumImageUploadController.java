@@ -1,6 +1,7 @@
 package com.chingubackend.controller;
 
 import com.chingubackend.service.S3Service;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +18,16 @@ public class AlbumImageUploadController {
 
     private final S3Service s3Service;
 
-    @GetMapping("/upload-url")
+    @Operation(
+            summary = "앨범 이미지 업로드용 Presigned URL 발급"
+    )
+    @GetMapping("/{groupId}/upload-url")
     public ResponseEntity<Map<String, String>> getAlbumUploadUrl(
-            @RequestParam(defaultValue = "jpg") String extension,
-            HttpServletRequest request) {
-
-        Long userId = (Long) request.getAttribute("userId");
+            @PathVariable Long groupId,
+            @RequestParam(defaultValue = "jpg") String extension) {
 
         String ext = extension.startsWith(".") ? extension : "." + extension;
-        String key = "albums/" + userId + "/" + UUID.randomUUID() + ext;
+        String key = "albums/" + groupId + "/" + UUID.randomUUID() + ext;
 
         URL uploadUrl = s3Service.generatePreSignedUrl(key);
         String fileUrl = s3Service.getFileUrl(key);
