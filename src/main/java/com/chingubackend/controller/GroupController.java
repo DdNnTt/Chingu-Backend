@@ -4,6 +4,7 @@ import com.chingubackend.dto.request.GroupInviteRequest;
 import com.chingubackend.dto.request.GroupInviteStatusRequest;
 import com.chingubackend.dto.request.GroupRequest;
 import com.chingubackend.dto.response.GroupDeleteResponse;
+import com.chingubackend.dto.response.GroupDetailResponse;
 import com.chingubackend.dto.response.GroupInviteResponse;
 import com.chingubackend.dto.response.GroupInviteResponse.GroupInviteResponseWithoutFriend;
 import com.chingubackend.dto.response.GroupResponse;
@@ -110,4 +111,16 @@ public class GroupController {
         List<GroupInviteResponse> invites = groupService.getGroupInvites(groupId);
         return ResponseEntity.ok(invites);
     }
+
+    @Operation(summary = "그룹 상세 조회")
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupDetailResponse> getGroupDetail(
+            @PathVariable Long groupId,
+            HttpServletRequest request
+    ) {
+        Long userId = (Long) request.getAttribute("userId");
+        GroupDetailResponse response = groupService.getGroupDetail(groupId, userId);
+        return ResponseEntity.ok(response);
+    }
+
 }
