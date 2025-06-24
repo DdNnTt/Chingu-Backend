@@ -9,6 +9,7 @@ import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupInvite;
 import com.chingubackend.entity.GroupMember;
 import com.chingubackend.entity.User;
+import com.chingubackend.model.MemberStatus;
 import com.chingubackend.model.RequestStatus;
 import com.chingubackend.repository.FriendRepository;
 import com.chingubackend.repository.GroupInviteRepository;
@@ -60,6 +61,13 @@ public class GroupService {
                 .build();
 
         Group saved = groupRepository.save(group);
+
+        GroupMember member = GroupMember.builder()
+                .group(saved)
+                .user(user)
+                .status(MemberStatus.APPROVED)
+                .build();
+        groupMemberRepository.save(member);
 
         return GroupResponse.builder()
                 .groupId(saved.getId())
@@ -193,7 +201,7 @@ public class GroupService {
             GroupMember groupMember = GroupMember.builder()
                     .group(groupInvite.getGroup())
                     .user(groupInvite.getReceiver())
-                    .status(RequestStatus.ACCEPTED)
+                    .status(MemberStatus.APPROVED)
                     .build();
 
             groupMemberRepository.save(groupMember);
@@ -224,21 +232,20 @@ public class GroupService {
         List<Group> createdGroups = groupRepository.findByCreatorId(userId);
 
         // 내가 초대를 수락한 그룹 (group_members 테이블 기준)
-        List<GroupMember> memberGroups = groupMemberRepository.findByUserIdAndStatus(userId, RequestStatus.ACCEPTED);
+        List<GroupMember> memberGroups = groupMemberRepository.findByUserIdAndStatus(userId, MemberStatus.APPROVED);
 
         List<Group> joinedGroups = memberGroups.stream()
                 .map(GroupMember::getGroup)
-                .collect(Collectors.toList());
+                .toList();
 
         // 중복 제거 (예: 생성자이면서 구성원일 수 있으므로)
-        List<Group> allGroups = createdGroups;
         joinedGroups.forEach(group -> {
-            if (!allGroups.contains(group)) {
-                allGroups.add(group);
+            if (!createdGroups.contains(group)) {
+                createdGroups.add(group);
             }
         });
 
-        return allGroups.stream()
+        return createdGroups.stream()
                 .map(group -> GroupResponse.builder()
                         .groupId(group.getId())
                         .groupName(group.getGroupName())
