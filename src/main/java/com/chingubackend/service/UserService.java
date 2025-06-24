@@ -9,6 +9,7 @@ import com.chingubackend.exception.DuplicateNicknameException;
 import com.chingubackend.exception.EmailNotVerifiedException;
 import com.chingubackend.exception.PasswordMismatchException;
 import com.chingubackend.exception.UserNotFoundException;
+import com.chingubackend.model.Role;
 import com.chingubackend.model.SocialType;
 import com.chingubackend.repository.GroupInviteRepository;
 import com.chingubackend.repository.GroupMemberRepository;
@@ -64,6 +65,7 @@ public class UserService {
                 .profilePictureUrl(profilePictureUrl)
                 .bio(request.getBio())
                 .socialType(SocialType.NONE)
+                .role(Role.ROLE_USER)
                 .build();
 
         userRepository.save(user);
