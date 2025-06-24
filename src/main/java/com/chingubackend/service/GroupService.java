@@ -2,18 +2,21 @@ package com.chingubackend.service;
 
 import com.chingubackend.dto.request.GroupRequest;
 import com.chingubackend.dto.response.GroupDeleteResponse;
+import com.chingubackend.dto.response.GroupDetailResponse;
 import com.chingubackend.dto.response.GroupInviteResponse;
 import com.chingubackend.dto.response.GroupResponse;
 import com.chingubackend.entity.Friend;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupInvite;
 import com.chingubackend.entity.GroupMember;
+import com.chingubackend.entity.GroupMemory;
 import com.chingubackend.entity.User;
 import com.chingubackend.model.MemberStatus;
 import com.chingubackend.model.RequestStatus;
 import com.chingubackend.repository.FriendRepository;
 import com.chingubackend.repository.GroupInviteRepository;
 import com.chingubackend.repository.GroupMemberRepository;
+import com.chingubackend.repository.GroupMemoryRepository;
 import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,17 +37,20 @@ public class GroupService {
     private final FriendRepository friendRepository;
     private final GroupInviteRepository groupInviteRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final GroupMemoryRepository groupMemoryRepository;
 
     public GroupService(GroupRepository groupRepository,
                         UserRepository userRepository,
                         FriendRepository friendRepository,
                         GroupInviteRepository groupInviteRepository,
-                        GroupMemberRepository groupMemberRepository) {
+                        GroupMemberRepository groupMemberRepository,
+                        GroupMemoryRepository groupMemoryRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.friendRepository = friendRepository;
         this.groupInviteRepository = groupInviteRepository;
         this.groupMemberRepository = groupMemberRepository;
+        this.groupMemoryRepository = groupMemoryRepository;
     }
 
     @Transactional
@@ -188,7 +194,7 @@ public class GroupService {
             throw new IllegalStateException("그룹 정보가 없습니다.");
         }
 
-        Long groupId = groupInvite.getGroup() != null ? groupInvite.getGroup().getId() : null;
+        Long groupId = groupInvite.getGroup().getId();
 
         if (status == RequestStatus.ACCEPTED) {
             groupInvite.updateStatus(RequestStatus.ACCEPTED);
@@ -275,4 +281,35 @@ public class GroupService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public GroupDetailResponse getGroupDetail(Long groupId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("그룹이 존재하지 않습니다."));
+
+        boolean isMember = groupMemberRepository.existsByGroupIdAndUserId(groupId, userId);
+        if (!isMember) {
+            throw new AccessDeniedException("해당 그룹에 속한 사용자만 조회할 수 있습니다.");
+        }
+
+        List<GroupMemory> memories = groupMemoryRepository.findByGroupIdOrderByCreatedDateDesc(groupId);
+
+        List<GroupDetailResponse.GroupAlbumSummary> memoryResponses = memories.stream()
+                .map(memory -> GroupDetailResponse.GroupAlbumSummary.builder()
+                        .albumId(memory.getId())
+                        .albumTitle(memory.getTitle())
+                        .albumImage(memory.getImageUrl1())
+                        .createdAt(memory.getCreatedDate())
+                        .build())
+                .toList();
+
+        return GroupDetailResponse.builder()
+                .groupId(group.getId())
+                .groupName(group.getGroupName())
+                .description(group.getDescription())
+                .createdAt(group.getCreatedAt())
+                .groupMemories(memoryResponses)
+                .build();
+    }
+
 }

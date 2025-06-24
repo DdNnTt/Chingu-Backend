@@ -4,6 +4,7 @@ import com.chingubackend.dto.request.GroupInviteRequest;
 import com.chingubackend.dto.request.GroupInviteStatusRequest;
 import com.chingubackend.dto.request.GroupRequest;
 import com.chingubackend.dto.response.GroupDeleteResponse;
+import com.chingubackend.dto.response.GroupDetailResponse;
 import com.chingubackend.dto.response.GroupInviteResponse;
 import com.chingubackend.dto.response.GroupInviteResponse.GroupInviteResponseWithoutFriend;
 import com.chingubackend.dto.response.GroupResponse;
@@ -98,6 +99,10 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "내가 속한 그룹 목록 조회",
+            description = "로그인한 사용자가 속해 있는 그룹 목록을 조회합니다. 생성한 그룹과 가입한 그룹 모두 포함됩니다."
+    )
     @GetMapping("/mygroups")
     public ResponseEntity<List<GroupResponse>> getMyGroups(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
@@ -105,9 +110,25 @@ public class GroupController {
         return ResponseEntity.ok(groups);
     }
 
+    @Operation(
+            summary = "그룹 초대 목록 조회",
+            description = "해당 그룹에 초대한 사용자 목록을 조회합니다."
+    )
     @GetMapping("/{groupId}/invites")
     public ResponseEntity<List<GroupInviteResponse>> getGroupInvites(@PathVariable Long groupId) {
         List<GroupInviteResponse> invites = groupService.getGroupInvites(groupId);
         return ResponseEntity.ok(invites);
     }
+
+    @Operation(summary = "그룹 상세 조회")
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupDetailResponse> getGroupDetail(
+            @PathVariable Long groupId,
+            HttpServletRequest request
+    ) {
+        Long userId = (Long) request.getAttribute("userId");
+        GroupDetailResponse response = groupService.getGroupDetail(groupId, userId);
+        return ResponseEntity.ok(response);
+    }
+
 }

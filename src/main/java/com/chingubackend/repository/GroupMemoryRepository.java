@@ -15,5 +15,6 @@ public interface GroupMemoryRepository extends JpaRepository<GroupMemory, Long> 
     void reassignMemoriesToSystem(@Param("user") User user, @Param("systemUser") User systemUser);
 
     List<GroupMemory> findByGroupId(Long groupId);
+    List<GroupMemory> findByGroupIdOrderByCreatedDateDesc(Long groupId);
 
 }
