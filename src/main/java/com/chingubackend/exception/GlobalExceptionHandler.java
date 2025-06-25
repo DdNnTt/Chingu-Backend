@@ -2,14 +2,13 @@ package com.chingubackend.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.validation.FieldError;
 
 import java.time.LocalDateTime;
 
@@ -70,6 +69,12 @@ public class GlobalExceptionHandler {
         String errorMessage = String.join("; ", errors);
 
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errorMessage);
+    }
+
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<?> handleGroupNotFound(GroupNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("message", ex.getMessage()));
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String error, String message) {

@@ -1,5 +1,6 @@
 package com.chingubackend.repository;
 
+import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupMember;
 import com.chingubackend.model.MemberStatus;
 import com.chingubackend.model.RequestStatus;
@@ -16,4 +17,5 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     void deleteByUserId(Long userId);
     boolean existsByGroupIdAndUserId(Long groupId, Long userId);
+    void deleteByGroup(Group group);
 }

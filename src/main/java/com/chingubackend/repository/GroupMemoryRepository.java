@@ -16,5 +16,6 @@ public interface GroupMemoryRepository extends JpaRepository<GroupMemory, Long> 
 
     List<GroupMemory> findByGroupId(Long groupId);
     List<GroupMemory> findByGroupIdOrderByCreatedDateDesc(Long groupId);
+    void deleteByGroup(Group group);
 
 }
