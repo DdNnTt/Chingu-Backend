@@ -42,12 +42,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-    // JWT 관련 의존성 추가
+    // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // Websocket 의존성 추가
+    // Websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.655'
