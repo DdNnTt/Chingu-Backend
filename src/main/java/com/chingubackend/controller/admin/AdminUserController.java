@@ -2,8 +2,10 @@ package com.chingubackend.controller.admin;
 
 import com.chingubackend.dto.admin.response.AdminUserDeleteResponse;
 import com.chingubackend.dto.admin.response.AdminUserResponse;
+import com.chingubackend.dto.response.AdminGroupResponse;
+import com.chingubackend.entity.Group;
 import com.chingubackend.entity.User;
-import com.chingubackend.exception.UserNotFoundException;
+import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.UserRepository;
 import com.chingubackend.service.admin.AdminUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +30,7 @@ import com.chingubackend.security.CustomUserDetails;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
-public class AdminController {
+public class AdminUserController {
 
     private final UserRepository userRepository;
     private final AdminUserService adminUserService;
@@ -94,6 +96,4 @@ public class AdminController {
 
         return ResponseEntity.ok(new AdminUserDeleteResponse(userId, "회원 삭제 성공"));
     }
-
-
 }
