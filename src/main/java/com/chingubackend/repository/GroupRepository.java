@@ -9,7 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface GroupRepository extends JpaRepository<Group, Long> {
     List<Group> findByCreatorId(Long creatorId);
+
     @Modifying
     @Query("UPDATE Group g SET g.creator.id = :newCreatorId WHERE g.creator.id = :originalCreatorId")
     void updateCreatorId(@Param("originalCreatorId") Long originalCreatorId, @Param("newCreatorId") Long newCreatorId);
+
+    @Query("SELECT DISTINCT g FROM Group g " + "LEFT JOIN FETCH g.members gm " + "LEFT JOIN FETCH gm.user")
+    List<Group> findAllWithMembersAndUsers();
 }

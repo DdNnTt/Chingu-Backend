@@ -1,5 +1,6 @@
 package com.chingubackend.repository;
 
+import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupInvite;
 import com.chingubackend.model.RequestStatus;
 import io.lettuce.core.dynamic.annotation.Param;
@@ -17,4 +18,6 @@ public interface GroupInviteRepository extends JpaRepository<GroupInvite, Long> 
     List<GroupInvite> findByReceiverIdWithGroup(@Param("receiverId") Long receiverId);
 
     void deleteBySenderIdOrReceiverId(Long senderId, Long receiverId);
+
+    void deleteByGroup(Group group);
 }

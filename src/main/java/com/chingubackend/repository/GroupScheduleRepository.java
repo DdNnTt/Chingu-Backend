@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface GroupScheduleRepository extends JpaRepository<GroupSchedule, Long> {
     List<GroupSchedule> findByGroup(Group group);
     void deleteByUser(User user);
+    void deleteByGroup(Group group);
 }

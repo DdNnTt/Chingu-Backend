@@ -1,6 +1,7 @@
 package com.chingubackend.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,9 @@ public class Group {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<GroupMember> members;
 
     @Builder
     public Group(String groupName, String description, User creator) {
