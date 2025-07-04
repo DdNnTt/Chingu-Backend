@@ -3,6 +3,7 @@ package com.chingubackend.service;
 import com.chingubackend.dto.request.QuizCreateRequest;
 import com.chingubackend.dto.request.QuizSolveRequest;
 import com.chingubackend.dto.response.QuizCreateResponse;
+import com.chingubackend.dto.response.QuizSetDetailResponse;
 import com.chingubackend.dto.response.QuizSolveResponse;
 import com.chingubackend.entity.*;
 import com.chingubackend.repository.*;
@@ -109,4 +110,36 @@ public class QuizService {
 
         friendshipScoreRepository.save(score);
     }
+
+    public QuizSetDetailResponse getQuizSetDetail(Long quizSetId) {
+        QuizSet quizSet = quizSetRepository.findById(quizSetId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 퀴즈 세트 없음"));
+
+        User creator = userRepository.findById(quizSet.getCreatorUserId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+        List<QuizSetQuestion> quizSetQuestions = quizSetQuestionRepository.findByQuizSetId(quizSetId);
+
+        List<QuizSetDetailResponse.QuestionDTO> questionDTOs = quizSetQuestions.stream()
+                .map(q -> {
+                    Question question = questionRepository.findById(q.getQuestionId())
+                            .orElseThrow(() -> new IllegalArgumentException("문제 없음"));
+                    return QuizSetDetailResponse.QuestionDTO.builder()
+                            .questionId(question.getId())
+                            .content(question.getContent())
+                            .option1(question.getOption1())
+                            .option2(question.getOption2())
+                            .option3(question.getOption3())
+                            .option4(question.getOption4())
+                            .build();
+                })
+                .toList();
+
+        return QuizSetDetailResponse.builder()
+                .quizSetId(quizSet.getId())
+                .creatorNickname(creator.getNickname())
+                .questions(questionDTOs)
+                .build();
+    }
+
 }

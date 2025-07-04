@@ -5,6 +5,7 @@ import com.chingubackend.dto.request.QuizCreateRequest;
 import com.chingubackend.dto.request.QuizSolveRequest;
 import com.chingubackend.dto.response.QuestionResponse;
 import com.chingubackend.dto.response.QuizCreateResponse;
+import com.chingubackend.dto.response.QuizSetDetailResponse;
 import com.chingubackend.dto.response.QuizSolveResponse;
 import com.chingubackend.service.QuestionService;
 import com.chingubackend.service.QuizService;
@@ -37,6 +38,13 @@ public class QuestionController {
         List<QuestionResponse> questions = questionService.getRandomTenQuestions();
         return ResponseEntity.ok(questions);
     }
+
+    @GetMapping("/{quizSetId}")
+    public ResponseEntity<QuizSetDetailResponse> getQuizSetDetail(@PathVariable Long quizSetId) {
+        QuizSetDetailResponse response = quizService.getQuizSetDetail(quizSetId);
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping("/create")
     public ResponseEntity<QuizCreateResponse> createQuiz(
