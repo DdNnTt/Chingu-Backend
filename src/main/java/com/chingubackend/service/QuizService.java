@@ -91,7 +91,7 @@ public class QuizService {
                 resultList
         );
     }
-    private void updateFriendshipScore(Long solverId, Long creatorId, int scoreToAdd) {
+    private void updateFriendshipScore(Long solverId, Long creatorId, int scoreToSet) {
         Long userA = Math.min(solverId, creatorId);
         Long userB = Math.max(solverId, creatorId);
 
@@ -105,7 +105,7 @@ public class QuizService {
                         .build()
                 );
 
-        score.setScore(score.getScore() + scoreToAdd);
+        score.setScore(scoreToSet);
         score.setLastUpdated(new Timestamp(System.currentTimeMillis()));
 
         friendshipScoreRepository.save(score);
