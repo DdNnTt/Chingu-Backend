@@ -1,14 +1,18 @@
 package com.chingubackend.controller;
 
 
+import com.chingubackend.dto.request.QuizCreateRequest;
 import com.chingubackend.dto.response.QuestionResponse;
+import com.chingubackend.dto.response.QuizCreateResponse;
 import com.chingubackend.service.QuestionService;
+import com.chingubackend.service.QuizService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,10 +22,19 @@ import java.util.List;
 public class QuestionController {
 
     private final QuestionService questionService;
+    private final QuizService quizService;
 
-    @GetMapping("/question_all")
+    @GetMapping("/question-all")
     public ResponseEntity<List<QuestionResponse>> getAllQuestions() {
         List<QuestionResponse> questions = questionService.getAllQuestions();
         return ResponseEntity.ok(questions);
     }
+
+    @GetMapping("/question-random")
+    public ResponseEntity<List<QuestionResponse>> getRandomTenQuestions() {
+        List<QuestionResponse> questions = questionService.getRandomTenQuestions();
+        return ResponseEntity.ok(questions);
+    }
+
+
 }

@@ -29,8 +29,8 @@ public class QuestionService {
                 .toList();
     }
 
-    public List<QuestionResponse> getRandomQuestions(int size) {
-        List<Question> questions = questionRepository.findRandomQuestions(size);
+    public List<QuestionResponse> getRandomTenQuestions() {
+        List<Question> questions = questionRepository.findRandomQuestions(10);
 
         return questions.stream()
                 .map(q -> new QuestionResponse(
