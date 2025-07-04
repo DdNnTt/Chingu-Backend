@@ -36,5 +36,15 @@ public class QuestionController {
         return ResponseEntity.ok(questions);
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<QuizCreateResponse> createQuiz(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody @Valid QuizCreateRequest request) {
+
+        String creatorNickname = userDetails.getUsername();
+        QuizCreateResponse response = quizService.createQuiz(creatorNickname, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
 }
