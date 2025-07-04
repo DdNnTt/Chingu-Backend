@@ -2,8 +2,10 @@ package com.chingubackend.controller;
 
 
 import com.chingubackend.dto.request.QuizCreateRequest;
+import com.chingubackend.dto.request.QuizSolveRequest;
 import com.chingubackend.dto.response.QuestionResponse;
 import com.chingubackend.dto.response.QuizCreateResponse;
+import com.chingubackend.dto.response.QuizSolveResponse;
 import com.chingubackend.service.QuestionService;
 import com.chingubackend.service.QuizService;
 import jakarta.validation.Valid;
@@ -44,6 +46,12 @@ public class QuestionController {
         String creatorNickname = userDetails.getUsername();
         QuizCreateResponse response = quizService.createQuiz(creatorNickname, request);
 
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/solve")
+    public ResponseEntity<QuizSolveResponse> solveQuiz(@RequestBody QuizSolveRequest request) {
+        QuizSolveResponse response = quizService.solveQuiz(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
