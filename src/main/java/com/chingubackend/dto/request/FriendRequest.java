@@ -38,6 +38,7 @@ public class FriendRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FriendList {
+        private Long userId;
         private Long friendUserId;
         private String nickname;
         private String name;
