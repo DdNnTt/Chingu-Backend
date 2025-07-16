@@ -1,15 +1,17 @@
 package com.chingubackend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "friendship_scores")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FriendshipScore {
 
     @Id
@@ -19,6 +21,7 @@ public class FriendshipScore {
     private Long userId;
     private Long friendUserId;
     private int score;
+    @Column(name = "last_updated")
     private Timestamp lastUpdated;
 
     public int getScore() {
