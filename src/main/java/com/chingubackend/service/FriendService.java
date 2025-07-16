@@ -137,6 +137,7 @@ public class FriendService {
                     .orElse(0);
 
             friends.add(new FriendRequest.FriendList(
+                    userId,
                     otherId,
                     user.getNickname(),
                     user.getName(),
