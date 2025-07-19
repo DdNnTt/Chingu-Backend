@@ -2,10 +2,7 @@ package com.chingubackend.service;
 
 import com.chingubackend.dto.request.QuizCreateRequest;
 import com.chingubackend.dto.request.QuizSolveRequest;
-import com.chingubackend.dto.response.FriendScoreResponse;
-import com.chingubackend.dto.response.QuizCreateResponse;
-import com.chingubackend.dto.response.QuizSetDetailResponse;
-import com.chingubackend.dto.response.QuizSolveResponse;
+import com.chingubackend.dto.response.*;
 import com.chingubackend.entity.*;
 import com.chingubackend.repository.*;
 import jakarta.transaction.Transactional;
@@ -16,6 +13,8 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +24,7 @@ public class QuizService {
     private final QuizSetQuestionRepository quizSetQuestionRepository;
     private final QuestionRepository questionRepository;
     private final FriendshipScoreRepository friendshipScoreRepository;
+    private final FriendRepository friendRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -176,6 +176,31 @@ public class QuizService {
                             .orElseThrow(() -> new IllegalArgumentException("친구 사용자 정보 없습니다."));
 
                     return new FriendScoreResponse(friend.getId(), friend.getNickname(), score.getScore());
+                })
+                .toList();
+    }
+
+    public List<AvailableFriendQuizResponse> getFriendsWithAvailableQuizzes(Long myUserId) {
+        List<Friend> friends = friendRepository.findByUserIdOrFriendId(myUserId, myUserId);
+
+        return friends.stream()
+                .map(friend -> {
+                    Long friendId = friend.getUserId().equals(myUserId)
+                            ? friend.getFriendId()
+                            : friend.getUserId();
+
+                    User friendUser = userRepository.findById(friendId)
+                            .orElseThrow(() -> new IllegalArgumentException("친구가 없습니다."));
+
+                    String nickname = friendUser.getNickname();
+
+                    Optional<QuizSet> quizSet = quizSetRepository.findFirstByCreatorUserIdOrderByCreatedAtDesc(friendId);
+
+                    return AvailableFriendQuizResponse.builder()
+                            .userId(friendId)
+                            .nickname(nickname)
+                            .quizSetId(quizSet.map(QuizSet::getId).orElse(null))
+                            .build();
                 })
                 .toList();
     }

@@ -95,4 +95,15 @@ public class QuestionController {
     }
 
 
+    @GetMapping("/friends-available")
+    public ResponseEntity<List<AvailableFriendQuizResponse>> getFriendsWithAvailableQuizzes(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String userId = userDetails.getUsername();
+        User me = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+        List<AvailableFriendQuizResponse> responses = quizService.getFriendsWithAvailableQuizzes(me.getId());
+        return ResponseEntity.ok(responses);
+    }
 }
