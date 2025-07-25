@@ -3,11 +3,8 @@ package com.chingubackend.controller;
 import com.chingubackend.dto.request.GroupInviteRequest;
 import com.chingubackend.dto.request.GroupInviteStatusRequest;
 import com.chingubackend.dto.request.GroupRequest;
-import com.chingubackend.dto.response.GroupDeleteResponse;
-import com.chingubackend.dto.response.GroupDetailResponse;
-import com.chingubackend.dto.response.GroupInviteResponse;
+import com.chingubackend.dto.response.*;
 import com.chingubackend.dto.response.GroupInviteResponse.GroupInviteResponseWithoutFriend;
-import com.chingubackend.dto.response.GroupResponse;
 import com.chingubackend.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -130,5 +127,20 @@ public class GroupController {
         GroupDetailResponse response = groupService.getGroupDetail(groupId, userId);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(
+            summary = "그룹 멤버 조회",
+            description = "해당 그룹의 승인된 멤버 목록을 조회합니다. (APPROVED 상태만 포함)"
+    )
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<List<GroupMemberResponse>> getGroupMembers(
+            @PathVariable Long groupId,
+            HttpServletRequest request) {
+
+        Long requesterId = (Long) request.getAttribute("userId");
+        List<GroupMemberResponse> members = groupService.getGroupMembers(groupId, requesterId);
+        return ResponseEntity.ok(members);
+    }
+
 
 }
