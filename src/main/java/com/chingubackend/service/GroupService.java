@@ -1,10 +1,7 @@
 package com.chingubackend.service;
 
 import com.chingubackend.dto.request.GroupRequest;
-import com.chingubackend.dto.response.GroupDeleteResponse;
-import com.chingubackend.dto.response.GroupDetailResponse;
-import com.chingubackend.dto.response.GroupInviteResponse;
-import com.chingubackend.dto.response.GroupResponse;
+import com.chingubackend.dto.response.*;
 import com.chingubackend.entity.Friend;
 import com.chingubackend.entity.Group;
 import com.chingubackend.entity.GroupInvite;
@@ -311,5 +308,30 @@ public class GroupService {
                 .groupMemories(memoryResponses)
                 .build();
     }
+
+    @Transactional
+    public List<GroupMemberResponse> getGroupMembers(Long groupId, Long requesterId) {
+        groupRepository.findById(groupId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 그룹이 존재하지 않습니다."));
+
+        if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, requesterId)) {
+            throw new AccessDeniedException("해당 그룹 멤버만 조회할 수 있습니다.");
+        }
+
+        // 그룹 멤버 전체 조회 (status=APPROVED만 필터링)
+        return groupMemberRepository.findByGroupId(groupId).stream()
+                .filter(member -> member.getStatus() == MemberStatus.APPROVED)
+                .map(member -> {
+                    var user = member.getUser();
+                    return GroupMemberResponse.builder()
+                            .userId(user.getId())
+                            .name(user.getName())
+                            .nickname(user.getNickname())
+                            .email(user.getEmail())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
 
 }
