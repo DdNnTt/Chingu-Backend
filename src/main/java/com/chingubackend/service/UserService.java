@@ -99,12 +99,15 @@ public class UserService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
+        // 소셜 로그인이 아닌 경우에만 비밀번호 확인
+        if (user.getSocialType() == SocialType.NONE) {
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                throw new PasswordMismatchException("비밀번호가 일치하지 않습니다.");
+            }
         }
 
         User deletedUser = userRepository.findByUserId("deleted-user")
-                .orElseThrow(() -> new IllegalStateException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalStateException("사용자 계정이 존재하지 않습니다."));
 
         // 그룹 소유자 -> 시스템 사용자(deleted-user)
         groupRepository.updateCreatorId(user.getId(), deletedUser.getId());
@@ -150,6 +153,11 @@ public class UserService {
 
         // 비밀번호 수정
         if (isPasswordChangeRequested(request)) {
+            if (user.getSocialType() != SocialType.NONE) {
+                // 소셜 로그인 사용자는 비밀번호 변경 불가
+                throw new UnsupportedOperationException("소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.");
+            }
+
             if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
                 throw new PasswordMismatchException("현재 비밀번호가 일치하지 않습니다.");
             }
