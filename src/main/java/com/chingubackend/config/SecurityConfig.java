@@ -4,6 +4,9 @@ import com.chingubackend.jwt.JwtAuthenticationFilter;
 import com.chingubackend.security.CustomAccessDeniedHandler;
 import com.chingubackend.security.CustomUserDetailsService;
 import java.util.List;
+
+import com.chingubackend.security.oauth.CustomOAuth2UserService;
+import com.chingubackend.security.oauth.OAuth2SuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,13 +32,20 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService userDetailsService;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           CustomUserDetailsService userDetailsService,
-                          CustomAccessDeniedHandler customAccessDeniedHandler) {
+                          CustomAccessDeniedHandler customAccessDeniedHandler,
+                          CustomOAuth2UserService customOAuth2UserService,
+                          OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     @Bean
@@ -80,9 +90,19 @@ public class SecurityConfig {
                                 "/api/users/delete/**",
                                 "/api/auth/email/password/verify",
                                 "/api/auth/email/password/reset",
-                                "/ws/**"
+                                "/ws/**",
+                                "/login/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
+                                "/login/oauth2/code/**"
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService) // OAuth2 사용자 정보 처리 서비스
+                        )
+                        .successHandler(oAuth2SuccessHandler)     // 로그인 성공 핸들러 (JWT 발급 등)
                 )
                 .authenticationProvider(authenticationProvider()) // 사용자 인증 제공자 설정
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
