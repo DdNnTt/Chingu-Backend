@@ -1,7 +1,9 @@
 package com.chingubackend.security.oauth;
 
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -43,7 +45,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 nickname,
                 profileImage,
                 attrs,
-                oAuth2User.getAuthorities()
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
 
@@ -67,7 +69,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 nickname,
                 profileImage,
                 attrs,
-                oAuth2User.getAuthorities()
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
 }

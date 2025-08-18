@@ -33,7 +33,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         String provider = oAuth2User.getProvider();          // GOOGLE or KAKAO
         String providerId = oAuth2User.getProviderId();      // sub or kakao id
-        String uniqueKey = provider + ":" + providerId;      // Unique Key
+        String uniqueKey = provider + ":" + providerId;
         String email = oAuth2User.getEmail();
         String nickname = oAuth2User.getNickname();
         String profileImage = oAuth2User.getProfileImage();
@@ -47,6 +47,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             user = optionalUser.get();
             user.setLastLoginDate(LocalDateTime.now());
             userRepository.save(user);
+
+            System.out.println("👉 기존 회원 로그인 성공: " + user.getNickname());
+
         } else {
             // 신규 회원 가입
             user = User.builder()
@@ -62,6 +65,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                     .build();
 
             user = userRepository.save(user);
+            System.out.println("🆕 신규 회원 가입 완료: " + user.getNickname());
         }
 
         // JWT 발급 (DB 기반 정보)
