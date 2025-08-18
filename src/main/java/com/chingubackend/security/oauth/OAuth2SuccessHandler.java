@@ -38,8 +38,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         String nickname = oAuth2User.getNickname();
         String profileImage = oAuth2User.getProfileImage();
 
-        // DB에서 회원 조회
+        // DB에서 회원 조회 (1. uniqueKey, 2. email)
         Optional<User> optionalUser = userRepository.findByUniqueKey(uniqueKey);
+
+        if (optionalUser.isEmpty() && email != null) {
+            optionalUser = userRepository.findByEmail(email);
+        }
 
         User user;
         if (optionalUser.isPresent()) {
