@@ -2,27 +2,36 @@ package com.chingubackend.security.oauth;
 
 import java.util.Collection;
 import java.util.Map;
+
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+@Getter
 public class CustomOAuth2User implements OAuth2User {
 
-    private final Collection<? extends GrantedAuthority> authorities;
-    private final Map<String, Object> attributes;
-    private final String nameAttributeKey;
-    private final Long userId;
+    private final String provider;     // GOOGLE, KAKAO
+    private final String providerId;   // sub (구글) / id (카카오)
     private final String email;
+    private final String nickname;
+    private final String profileImage;
+    private final Map<String, Object> attributes;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomOAuth2User(Collection<? extends GrantedAuthority> authorities,
+    public CustomOAuth2User(String provider,
+                            String providerId,
+                            String email,
+                            String nickname,
+                            String profileImage,
                             Map<String, Object> attributes,
-                            String nameAttributeKey,
-                            Long userId,
-                            String email) {
-        this.authorities = authorities;
-        this.attributes = attributes;
-        this.nameAttributeKey = nameAttributeKey;
-        this.userId = userId;
+                            Collection<? extends GrantedAuthority> authorities) {
+        this.provider = provider;
+        this.providerId = providerId;
         this.email = email;
+        this.nickname = nickname;
+        this.profileImage = profileImage;
+        this.attributes = attributes;
+        this.authorities = authorities;
     }
 
     @Override
@@ -37,14 +46,6 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return (String) attributes.get(nameAttributeKey);
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public String getEmail() {
-        return email;
+        return provider + ":" + providerId; // unique key 역할
     }
 }
