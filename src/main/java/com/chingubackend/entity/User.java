@@ -57,6 +57,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private SocialType socialType = SocialType.NONE;
 
+    @Column(name = "unique_key", unique = true)
+    private String uniqueKey;
+
     @PrePersist
     public void prePersist() {
         if (joinDate == null) {
@@ -75,7 +78,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private Role role = Role.ROLE_USER;
 
     @Builder
     public User(String userId,
@@ -86,7 +89,8 @@ public class User {
                 String profilePictureUrl,
                 String bio,
                 SocialType socialType,
-                Role role) {
+                Role role,
+                String uniqueKey) {
         this.userId = userId;
         this.name = name;
         this.nickname = nickname;
@@ -96,5 +100,6 @@ public class User {
         this.bio = bio;
         this.socialType = socialType;
         this.role = role;
+        this.uniqueKey = uniqueKey;
     }
 }

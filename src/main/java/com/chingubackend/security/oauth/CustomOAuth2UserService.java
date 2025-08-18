@@ -1,14 +1,7 @@
 package com.chingubackend.security.oauth;
 
-import com.chingubackend.entity.User;
-import com.chingubackend.model.Role;
-import com.chingubackend.model.SocialType;
-import com.chingubackend.repository.UserRepository;
-import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -20,47 +13,61 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final UserRepository userRepository;
-
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        System.out.println("✅ CustomOAuth2UserService 호출됨");
+        OAuth2User oAuth2User = new DefaultOAuth2UserService().loadUser(userRequest);
+        String registrationId = userRequest.getClientRegistration().getRegistrationId(); // google or kakao
 
-        try {
-            OAuth2User oAuth2User = new DefaultOAuth2UserService().loadUser(userRequest);
-            Map<String, Object> attributes = oAuth2User.getAttributes();
-
-            String email = (String) attributes.get("email");
-            String name = (String) attributes.get("name");
-            String picture = (String) attributes.get("picture");
-
-            User user = userRepository.findByEmail(email)
-                    .orElseGet(() -> {
-                        User newUser = User.builder()
-                                .userId(UUID.randomUUID().toString())
-                                .name(name)
-                                .nickname("user_" + UUID.randomUUID().toString().substring(0, 8))
-                                .email(email)
-                                .password("NO_PASSWORD")
-                                .profilePictureUrl(picture)
-                                .socialType(SocialType.GOOGLE)
-                                .role(Role.ROLE_USER)
-                                .build();
-                        return userRepository.save(newUser);
-                    });
-
-            return new CustomOAuth2User(
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                    attributes,
-                    "email",
-                    user.getId(),
-                    user.getEmail()
-            );
-
-        } catch (Exception e) {
-            System.out.println("❌ CustomOAuth2UserService 예외 발생: " + e.getMessage());
-            e.printStackTrace();  // 콘솔에 전체 스택 출력
-            throw new OAuth2AuthenticationException(e.getMessage());
+        if ("google".equals(registrationId)) {
+            return mapGoogleUser(oAuth2User);
+        } else if ("kakao".equals(registrationId)) {
+            return mapKakaoUser(oAuth2User);
+        } else {
+            throw new OAuth2AuthenticationException("지원하지 않는 Provider: " + registrationId);
         }
+    }
+
+    private CustomOAuth2User mapGoogleUser(OAuth2User oAuth2User) {
+        Map<String, Object> attrs = oAuth2User.getAttributes();
+
+        String provider = "GOOGLE";
+        String providerId = (String) attrs.get("sub");
+        String email = (String) attrs.get("email");
+        String nickname = (String) attrs.get("name");
+        String profileImage = (String) attrs.get("picture");
+
+        return new CustomOAuth2User(
+                provider,
+                providerId,
+                email,
+                nickname,
+                profileImage,
+                attrs,
+                oAuth2User.getAuthorities()
+        );
+    }
+
+    private CustomOAuth2User mapKakaoUser(OAuth2User oAuth2User) {
+        Map<String, Object> attrs = oAuth2User.getAttributes();
+
+        String provider = "KAKAO";
+        String providerId = String.valueOf(attrs.get("id"));
+
+        Map<String, Object> account = (Map<String, Object>) attrs.get("kakao_account");
+        String email = account != null ? (String) account.get("email") : null;
+
+        Map<String, Object> profile = account != null ? (Map<String, Object>) account.get("profile") : null;
+        String nickname = profile != null ? (String) profile.get("nickname") : null;
+        String profileImage = profile != null ? (String) profile.get("profile_image_url") : null;
+
+        return new CustomOAuth2User(
+                provider,
+                providerId,
+                email,
+                nickname,
+                profileImage,
+                attrs,
+                oAuth2User.getAuthorities()
+        );
     }
 }
