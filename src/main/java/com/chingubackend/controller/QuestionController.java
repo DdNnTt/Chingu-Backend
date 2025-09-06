@@ -60,6 +60,23 @@ public class QuestionController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "내가 만든 퀴즈 목록 조회",
+            description = "로그인한 사용자가 생성한 퀴즈 세트를 최신순으로 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @GetMapping("/my-quizzes")
+    public ResponseEntity<List<MyQuizSummaryResponse>> getMyQuizzes(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String userId = userDetails.getUsername();
+        User me = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+        var responses = quizService.getMyQuizzes(me.getId());
+        return ResponseEntity.ok(responses);
+    }
+
     @Operation(summary = "퀴즈 생성", description = "친구가 맞춰볼 수 있도록 퀴즈를 생성합니다.")
     @ApiResponse(responseCode = "201", description = "퀴즈 생성 성공")
     @PostMapping("/create")
