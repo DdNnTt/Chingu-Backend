@@ -139,6 +139,7 @@ public class FriendService {
             friends.add(new FriendRequest.FriendList(
                     userId,
                     otherId,
+                    user.getUserId(),
                     user.getNickname(),
                     user.getName(),
                     score,
