@@ -40,6 +40,7 @@ public class FriendRequest {
     public static class FriendList {
         private Long userId;
         private Long friendUserId;
+        private String id;
         private String nickname;
         private String name;
         private int score;

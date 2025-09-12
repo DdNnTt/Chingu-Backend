@@ -8,4 +8,5 @@ import java.util.List;
 public interface QuizSetQuestionRepository extends JpaRepository<QuizSetQuestion, Long> {
 
     List<QuizSetQuestion> findByQuizSetId(Long quizSetId);
+    int countByQuizSetId(Long quizSetId);
 }

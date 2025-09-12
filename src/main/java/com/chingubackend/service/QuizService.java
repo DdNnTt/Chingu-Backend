@@ -205,5 +205,18 @@ public class QuizService {
                 .toList();
     }
 
+    public List<MyQuizSummaryResponse> getMyQuizzes(Long creatorUserId) {
+        var quizSets = quizSetRepository.findByCreatorUserIdOrderByCreatedAtDesc(creatorUserId);
+
+        return quizSets.stream()
+                .map(qs -> MyQuizSummaryResponse.builder()
+                        .quizSetId(qs.getId())
+                        .createdAt(qs.getCreatedAt())
+                        .questionCount(quizSetQuestionRepository.countByQuizSetId(qs.getId()))
+                        .build()
+                )
+                .toList();
+    }
+
 
 }
