@@ -28,13 +28,13 @@ public class QuizService {
     private final UserRepository userRepository;
 
     @Transactional
-    public QuizCreateResponse createQuiz(String creatorNickname, QuizCreateRequest request) {
-
-        User creator = userRepository.findByNickname(creatorNickname)
-                .orElseThrow(() -> new IllegalArgumentException("출제자 정보가 없습니다"));
+    public QuizCreateResponse createQuiz(Long creatorUserId, QuizCreateRequest request) {
+        if (!userRepository.existsById(creatorUserId)) {
+            throw new IllegalArgumentException("사용자 없음");
+        }
 
         QuizSet quizSet = QuizSet.builder()
-                .creatorUserId(creator.getId())
+                .creatorUserId(creatorUserId)
                 .createdAt(LocalDateTime.now())
                 .build();
         quizSetRepository.save(quizSet);
@@ -49,19 +49,20 @@ public class QuizService {
 
         quizSetQuestionRepository.saveAll(quizQuestions);
 
-        return new QuizCreateResponse(quizSet.getId(), "퀴즈 생성이 완료되었습니다.");
+        return new QuizCreateResponse(quizSet.getId(), "퀴즈 생성 완료");
     }
 
+
     @Transactional
-    public QuizSolveResponse solveQuiz(QuizSolveRequest request) {
-        User solver = userRepository.findByNickname(request.getSolverNickname())
-                .orElseThrow(() -> new IllegalArgumentException("사용자 닉네임이 없습니다."));
+    public QuizSolveResponse solveQuiz(Long solverUserId, QuizSolveRequest request) {
+        User solver = userRepository.findById(solverUserId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
         QuizSet quizSet = quizSetRepository.findById(request.getQuizSetId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 퀴즈 세트가 없습니다."));
 
-        Long friendId = quizSet.getCreatorUserId();
-        Long solverId = solver.getId();
+        Long creatorId = quizSet.getCreatorUserId();
+        Long solverId  = solver.getId();
 
         List<QuizSolveResponse.Result> resultList = new ArrayList<>();
         int correctCount = 0;
@@ -81,7 +82,7 @@ public class QuizService {
         }
 
         int score = correctCount * 10;
-        updateFriendshipScore(solverId, friendId, score);
+        updateFriendshipScore(solverId, creatorId, score);
 
         return new QuizSolveResponse(
                 quizSet.getId(),
@@ -92,6 +93,7 @@ public class QuizService {
                 resultList
         );
     }
+
     private void updateFriendshipScore(Long solverId, Long creatorId, int scoreToSet) {
         Long userA = Math.min(solverId, creatorId);
         Long userB = Math.max(solverId, creatorId);

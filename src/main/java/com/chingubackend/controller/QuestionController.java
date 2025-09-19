@@ -84,17 +84,30 @@ public class QuestionController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody @Valid QuizCreateRequest request) {
 
-        String creatorNickname = userDetails.getUsername();
-        QuizCreateResponse response = quizService.createQuiz(creatorNickname, request);
+        // userDetails.getUsername() → 로그인 ID(userId)
+        String loginId = userDetails.getUsername();
 
+        // userId로 User 조회
+        User creator = userRepository.findByUserId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+        QuizCreateResponse response = quizService.createQuiz(creator.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "퀴즈 풀이", description = "친구가 만든 퀴즈를 풉니다.")
     @ApiResponse(responseCode = "201", description = "퀴즈 풀이 완료 및 점수 계산")
     @PostMapping("/solve")
-    public ResponseEntity<QuizSolveResponse> solveQuiz(@RequestBody QuizSolveRequest request) {
-        QuizSolveResponse response = quizService.solveQuiz(request);
+    public ResponseEntity<QuizSolveResponse> solveQuiz(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody @Valid QuizSolveRequest request) {
+
+        String loginId = userDetails.getUsername();
+        Long solverUserId = userRepository.findByUserId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"))
+                .getId();
+
+        QuizSolveResponse response = quizService.solveQuiz(solverUserId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
