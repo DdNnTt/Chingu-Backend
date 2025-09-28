@@ -54,7 +54,7 @@ public class UserService {
 
         String profilePictureUrl = request.getProfilePictureUrl() != null
                 ? request.getProfilePictureUrl()
-                : "https://chingu-album.s3.ap-northeast-2.amazonaws.com/album/default-profile.png";
+                : "https://chingu-album.s3.ap-northeast-2.amazonaws.com/profile/default-profile.png";
 
         User user = User.builder()
                 .userId(request.getUserId())
