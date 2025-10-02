@@ -11,7 +11,8 @@ public class GroupScheduleResponse {
     private String nickname;
     private String title;
     private String description;
-    private LocalDateTime scheduleDate;
+    private String scheduleDate;
+    private String scheduleTime;
     private LocalDateTime createdAt;
 
     public GroupScheduleResponse(GroupSchedule schedule) {
@@ -20,7 +21,11 @@ public class GroupScheduleResponse {
         this.nickname = schedule.getUser().getNickname();
         this.title = schedule.getTitle();
         this.description = schedule.getDescription();
-        this.scheduleDate = schedule.getScheduleDate();
+
+        // LocalDateTime → 날짜/시간 분리
+        this.scheduleDate = schedule.getScheduleDate().toLocalDate().toString();
+        this.scheduleTime = schedule.getScheduleDate().toLocalTime().toString();
+
         this.createdAt = schedule.getCreatedAt();
     }
 }
