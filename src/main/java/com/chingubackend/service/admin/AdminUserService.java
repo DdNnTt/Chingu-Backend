@@ -27,9 +27,13 @@ public class AdminUserService {
         User deletedUser = userRepository.findByUserId("deleted-user")
                 .orElseThrow(() -> new IllegalStateException("시스템 사용자(deleted-user)가 존재하지 않습니다."));
 
+
+        groupInviteRepository.deleteBySenderId(user.getId());
+        groupInviteRepository.deleteByReceiverId(user.getId());
+
         groupRepository.updateCreatorId(user.getId(), deletedUser.getId());
         messageRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
-        groupInviteRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
+
         scheduleRepository.deleteByUser(user);
         groupMemberRepository.deleteByUserId(user.getId());
         groupScheduleRepository.deleteByUser(user);

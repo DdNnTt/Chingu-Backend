@@ -9,5 +9,6 @@ import lombok.Setter;
 public class GroupScheduleRequest {
     private String title;
     private String description;
-    private LocalDate scheduleDate;
+    private String scheduleDate;
+    private String scheduleTime;
 }

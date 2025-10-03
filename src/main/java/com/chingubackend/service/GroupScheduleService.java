@@ -10,6 +10,9 @@ import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.GroupScheduleRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,12 +37,17 @@ public class GroupScheduleService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new NotFoundException("그룹을 찾을 수 없습니다."));
 
+        // 날짜 + 시간 합치기
+        LocalDate date = LocalDate.parse(request.getScheduleDate());
+        LocalTime time = LocalTime.parse(request.getScheduleTime());
+        LocalDateTime dateTime = LocalDateTime.of(date, time);
+
         GroupSchedule schedule = GroupSchedule.builder()
                 .group(group)
                 .user(user)
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .scheduleDate(request.getScheduleDate().atStartOfDay())
+                .scheduleDate(dateTime)   // 날짜+시간 함께 저장
                 .build();
 
         return groupScheduleRepository.save(schedule);
