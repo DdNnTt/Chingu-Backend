@@ -19,8 +19,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
+      - name: Build with Gradle (bootJar)
+        run: ./gradlew clean bootJar -x test
 
       - name: Check if JAR file exists
         run: ls -al build/libs
