@@ -118,9 +118,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-                "http://localhost:3000",  // 프론트 로컬 주소
+                "http://localhost:3000",
                 "https://chinguchingu.kro.kr",
-                "https://chingu-frontend.vercel.app"
+                "https://chingu-frontend.vercel.app",
+                "https://chinguchingu.vercel.app/"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
