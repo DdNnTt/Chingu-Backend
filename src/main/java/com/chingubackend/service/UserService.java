@@ -17,6 +17,9 @@ import com.chingubackend.repository.GroupMemoryRepository;
 import com.chingubackend.repository.GroupRepository;
 import com.chingubackend.repository.GroupScheduleRepository;
 import com.chingubackend.repository.MessageRepository;
+import com.chingubackend.repository.QuestionRepository;
+import com.chingubackend.repository.QuizSetQuestionRepository;
+import com.chingubackend.repository.QuizSetRepository;
 import com.chingubackend.repository.ScheduleRepository;
 import com.chingubackend.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -35,13 +38,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
-    private final GroupMemberRepository groupMemberRepository;
+
+    // 그룹 관련
     private final GroupInviteRepository groupInviteRepository;
-    private final GroupScheduleRepository groupScheduleRepository;
-    private final GroupRepository groupRepository;
-    private final MessageRepository messageRepository;
-    private final ScheduleRepository scheduleRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final GroupMemoryRepository groupMemoryRepository;
+    private final GroupRepository groupRepository;
+    private final GroupScheduleRepository groupScheduleRepository;
+
+    // 메시지
+    private final MessageRepository messageRepository;
+
+    // 스케줄(개인)
+    private final ScheduleRepository scheduleRepository;
 
     @Transactional
     public void registerUser(UserRequest request) {
@@ -107,20 +116,33 @@ public class UserService {
         }
 
         User deletedUser = userRepository.findByUserId("deleted-user")
-                .orElseThrow(() -> new IllegalStateException("사용자 계정이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalStateException("deleted-user 계정이 존재하지 않습니다."));
 
-        // 그룹 소유자 -> 시스템 사용자(deleted-user)
-        groupRepository.updateCreatorId(user.getId(), deletedUser.getId());
-        // 추억 앨범 글 작성자 -> 시스템 사용자(deleted-user)
-        groupMemoryRepository.reassignMemoriesToSystem(user, deletedUser);
+        // 1. 그룹 초대/요청 삭제
+        int deletedAsSender = groupInviteRepository.deleteBySenderId(user.getId());
+        int deletedAsReceiver = groupInviteRepository.deleteByReceiverId(user.getId());
+        System.out.println("[탈퇴 처리] group_invite 삭제됨: sender=" + deletedAsSender + ", receiver=" + deletedAsReceiver);
 
+        // 2. 메시지 삭제
         messageRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
-        groupInviteRepository.deleteBySenderIdOrReceiverId(user.getId(), user.getId());
-        scheduleRepository.deleteByUser(user);
+
+        // 3. 그룹 멤버 삭제
         groupMemberRepository.deleteByUserId(user.getId());
+
+        // 4. 그룹 스케줄 삭제
         groupScheduleRepository.deleteByUser(user);
 
+        // 5. 유저 개인 스케줄 삭제
+        scheduleRepository.deleteByUser(user);
+
+        // 6. 소유권/작성자 이관
+        groupRepository.updateCreatorId(user.getId(), deletedUser.getId());
+        groupMemoryRepository.reassignMemoriesToSystem(user, deletedUser);
+
+        // 7. 마지막에 유저 삭제
         userRepository.delete(user);
+
+        System.out.println("[탈퇴 처리] 사용자 " + userId + " (id=" + user.getId() + ") 삭제 완료");
     }
 
     public List<UserResponse> searchUsers(String keyword) {
