@@ -221,4 +221,19 @@ public class QuizService {
     }
 
 
+    @Transactional
+    public void deleteQuizSet(Long requesterUserId, Long quizSetId) {
+        QuizSet quizSet = quizSetRepository.findById(quizSetId)
+                .orElseThrow(() -> new IllegalArgumentException("퀴즈 세트가 없습니다."));
+
+        if (!quizSet.getCreatorUserId().equals(requesterUserId)) {
+            throw new IllegalStateException("세트 생성자만 삭제할 수 있습니다.");
+        }
+
+        // 매핑 먼저 정리 (연관관계 미사용 구조)
+        quizSetQuestionRepository.deleteByQuizSetId(quizSetId);
+
+        // 세트 삭제
+        quizSetRepository.deleteById(quizSetId);
+    }
 }
