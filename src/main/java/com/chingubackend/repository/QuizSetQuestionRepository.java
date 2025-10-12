@@ -9,4 +9,6 @@ public interface QuizSetQuestionRepository extends JpaRepository<QuizSetQuestion
 
     List<QuizSetQuestion> findByQuizSetId(Long quizSetId);
     int countByQuizSetId(Long quizSetId);
+
+    void deleteByQuizSetId(Long quizSetId);
 }

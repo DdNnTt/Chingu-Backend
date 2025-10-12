@@ -146,8 +146,17 @@ public class UserService {
     }
 
     public List<UserResponse> searchUsers(String keyword) {
-        List<User> users = userRepository.findByNameOrNicknameOrUserId(keyword, keyword, keyword);
-        return users.stream().map(UserResponse::fromEntity).collect(Collectors.toList());
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of(); // 공백 검색 시 전체 조회 방지
+        }
+
+        List<User> users = userRepository
+                .findByNameContainingIgnoreCaseOrNicknameContainingIgnoreCase(
+                        keyword, keyword);
+
+        return users.stream()
+                .map(UserResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Transactional

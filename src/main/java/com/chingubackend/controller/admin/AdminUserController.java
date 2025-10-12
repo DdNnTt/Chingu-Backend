@@ -8,7 +8,9 @@ import com.chingubackend.service.admin.AdminUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,23 +51,21 @@ public class AdminUserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "회원 검색", description = "이름, 닉네임, 사용자 ID를 기준으로 회원을 검색합니다. 관리자 권한 필요.")
+    @Operation(summary = "회원 검색", description = "이름, 닉네임, 사용자 ID를 기준으로 회원을 검색합니다.")
     @GetMapping("/users/search")
     public ResponseEntity<List<AdminUserResponse>> searchUsersByAdmin(
             @Parameter(description = "검색 키워드 (이름/닉네임/ID)")
             @RequestParam String keyword) {
+        List<AdminUserResponse> users = adminUserService.searchUsers(keyword);
 
-        List<User> users = userRepository.searchByKeyword(keyword);
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", users);
 
         if (users.isEmpty()) {
-            return ResponseEntity.status(404).build();
+            response.put("message", "일치하는 회원이 없습니다.");
         }
 
-        List<AdminUserResponse> response = users.stream()
-                .map(AdminUserResponse::new)
-                .toList();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(users);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -6,6 +6,7 @@ import com.chingubackend.dto.request.QuizSolveRequest;
 import com.chingubackend.dto.response.*;
 import com.chingubackend.entity.FriendshipScore;
 import com.chingubackend.entity.User;
+import com.chingubackend.exception.SuccessResponse;
 import com.chingubackend.repository.FriendshipScoreRepository;
 import com.chingubackend.repository.UserRepository;
 import com.chingubackend.service.QuestionService;
@@ -152,5 +153,27 @@ public class QuestionController {
 
         List<AvailableFriendQuizResponse> responses = quizService.getFriendsWithAvailableQuizzes(me.getId());
         return ResponseEntity.ok(responses);
+    }
+
+    @Operation(
+            summary = "퀴즈 세트 삭제",
+            description = "로그인한 사용자가 생성한 퀴즈 세트를 삭제합니다. 생성자만 삭제할 수 있습니다."
+    )
+    @ApiResponse(responseCode = "200", description = "삭제 성공")
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "403", description = "삭제 권한 없음 (세트 생성자 아님)")
+    @ApiResponse(responseCode = "404", description = "퀴즈 세트 없음")
+    @DeleteMapping("/{quizSetId}")
+    public ResponseEntity<SuccessResponse> deleteQuizSet(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long quizSetId) {
+
+        String loginId = userDetails.getUsername();
+        Long requesterId = userRepository.findByUserId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"))
+                .getId();
+
+        quizService.deleteQuizSet(requesterId, quizSetId);
+        return ResponseEntity.ok(SuccessResponse.of("퀴즈 세트 삭제 완료"));
     }
 }
