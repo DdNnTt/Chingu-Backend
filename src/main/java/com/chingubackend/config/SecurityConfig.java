@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions().disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(
                                 "/auth/login",
                                 "/auth/signup",
@@ -81,6 +81,7 @@ public class SecurityConfig {
                                 "/api/users/check-userId",
                                 "/api/users/check-nickname",
                                 "/api/users/find-userId",
+                                "/api/users/search",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
@@ -120,7 +121,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "https://chinguchingu.kro.kr",
                 "https://chingu-frontend.vercel.app",
-                "https://chinguchingu.vercel.app/"
+                "https://chinguchingu.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

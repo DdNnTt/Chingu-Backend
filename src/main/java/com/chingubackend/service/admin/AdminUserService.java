@@ -1,9 +1,11 @@
 package com.chingubackend.service.admin;
 
+import com.chingubackend.dto.admin.response.AdminUserResponse;
 import com.chingubackend.entity.User;
 import com.chingubackend.exception.UserNotFoundException;
 import com.chingubackend.repository.*;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,19 @@ public class AdminUserService {
     private final ScheduleRepository scheduleRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupScheduleRepository groupScheduleRepository;
+
+    public List<AdminUserResponse> searchUsers(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return List.of(); // 공백 검색 시 전체 조회 방지
+        }
+
+        List<User> users = userRepository
+                .findByNameContainingIgnoreCaseOrNicknameContainingIgnoreCase(keyword, keyword);
+
+        return users.stream()
+                .map(AdminUserResponse::new)
+                .toList();
+    }
 
     @Transactional
     public void deleteUserByAdmin(Long targetUserId) {
