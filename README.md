@@ -33,7 +33,7 @@
 ## ⚙️ 사용 스택 (Tech Stack)
 
 > **Frontend**  
-> Next.js, TypeScript, Zustand, Storybook
+> Next.js, TypeScript, Storybook
 >
 > **Backend**  
 > Java 17, Spring Boot, Spring Security, Spring Data JPA, SSE (Server-Sent Events),  
